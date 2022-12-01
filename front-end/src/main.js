@@ -1,21 +1,16 @@
 import { createApp } from 'vue'
-import App from './App.vue' // 引入组件入口
+import ElementPlus from 'element-plus';
+import 'element-plus/theme-chalk/index.css'
 
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css' //引入element-ui plus
+// import VueRouter from 'vue-router';
+import router from '../src/router/index.js'
 
-import VueAxios from 'vue-axios' //引入vue-axios
-
-import Router from 'vue-router'  //引入vue-router
-
+import App from './App.vue'
 
 
 const app = createApp(App)
+app.config.productionTip = false
 
-app.use(ElementPlus) // 全局挂载ElementuiPlus
-
-app.use(VueAxios, axios) // 全局挂载Axios
-
-app.use(Router) // 全局挂载Router
-
+app.use(router)
+app.use(ElementPlus)
 app.mount('#app')
