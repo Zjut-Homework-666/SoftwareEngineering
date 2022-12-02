@@ -20,9 +20,6 @@
                     <p>机票预订系统</p>
                 </span>
             </div>
-            <div class="mainBox_ct">
-                <HomePage_bts></HomePage_bts>
-            </div>
         </div>
     </div>
 </template>
@@ -33,6 +30,7 @@
     padding: 0;
     width: 100%;
     height: 100%;
+
 }
 
 #ct {
@@ -53,8 +51,6 @@
 
 }
 
-
-
 .logo_ct {
     width: 100%;
     height: 10%;
@@ -66,21 +62,16 @@
     font-weight: bold;
     text-align: left;
     color: #336B9F;
-    user-select:none;
-    -webkit-user-seletct: none;
-    -moz-user-seletct: none;
 }
 
-.mainBox_ct {
-    position: absolute;
-    background-color: #f8f6f6;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
-        rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
-        rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
-    border-radius: 15px;
-}
 </style>
 
-<script setup>
-import HomePage_bts from "./HomePage_bts.vue";
+<script>
+// import HomePage_bts from "./HomePage_bts.vue"
+
+export default {
+    name: 'HomePage',
+    methods: {}
+}
+
 </script>

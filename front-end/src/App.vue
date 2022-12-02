@@ -1,5 +1,4 @@
 <template>
-  <!-- <HomePage /> -->
   <RouterView></RouterView>
 </template>
 
