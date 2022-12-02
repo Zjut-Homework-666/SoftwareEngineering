@@ -117,6 +117,10 @@
     border-radius: 5px;
     background-color: #228EC0;
 }
+
+.bt:hover {
+    background-color: #1076a4;
+}
 </style>
 
 <script>
