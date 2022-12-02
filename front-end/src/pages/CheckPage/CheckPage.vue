@@ -3,6 +3,9 @@
     <div id="ct">
         <div class="main_ct">
             <div class="logo_ct">
+                <div style="width:45px; height:45px">
+                  <img id="logo" src="../../assets/logo.png" alt="" width=45 height=45>
+                </div>
                 <span class=" logo_text">
                     <p>机票预订系统 核验界面</p>
                 </span>
@@ -43,17 +46,28 @@
 }
 
 .logo_ct {
-    width: 100%;
-    height: 10%;
-    text-align: left;
-    margin-top: -5%;
+  width: 100%;
+  height: 60px;
+  line-height: 45px;
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+}
+
+#logo {
+  object-fit:contain;
+  vertical-align: middle;
 }
 
 .logo_text {
-    font-size: 25px;
-    font-weight: bold;
-    text-align: left;
-    color: #336B9F;
+  width: 100%;
+  height: 100%;
+  font-size: 25px;
+  font-weight: bold;
+  text-align: left;
+  color: #336B9F;
+  margin-left: 10px;
+  vertical-align: middle;
 }
 .mainBox_ct {
     position: absolute;
