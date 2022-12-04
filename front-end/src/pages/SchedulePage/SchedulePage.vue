@@ -11,24 +11,32 @@
                 </span>
             </div>
             <div class="mainBox_ct">
-                asdadasd
+                <div id="conditionArea">
+                    <searchOption></searchOption>
+                </div>
+                <el-divider />
+                <div id="listArea"></div>
             </div>
         </div>
     </div>
 </template>
 
-<style>
+<script setup>
+import searchOption from "../../components/SchedulePagePart/SearchOption.vue";
+
+</script>
+
+
+<style scoped>
 * {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-
 }
 
 #ct {
     background-color: #e9e9e9;
-
 }
 
 .main_ct {
@@ -70,7 +78,12 @@
 }
 
 .mainBox_ct {
+    height: 100%;
+    width: 100%;
     position: absolute;
+    display: flex;
+    justify-content: left;
+    flex-flow: column;
     background-color: #f8f6f6;
     border: 1px solid #cac8c8;
     box-shadow: rgba(50, 50, 93, 0.25) 0 50px 100px -20px,
@@ -78,14 +91,19 @@
         rgba(10, 37, 64, 0.35) 0 -2px 6px 0 inset;
     border-radius: 15px;
 }
-</style>
 
-<script>
-// import HomePage_bts from "./HomePage_bts.vue"
-
-export default {
-    name: 'HomePage',
-    methods: {}
+#conditionArea {
+    width: 100%;
+    height: 40%;
+    margin-top: 10px;
 }
 
-</script>
+.el-divider--horizontal {
+    margin: 0 auto;
+    display: block;
+    height: 1px;
+    width: 96%;
+    border-top: 1px var(--el-border-color) var(--el-border-style);
+}
+</style>
+
