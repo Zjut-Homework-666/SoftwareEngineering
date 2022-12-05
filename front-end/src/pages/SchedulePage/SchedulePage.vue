@@ -6,23 +6,24 @@
                 <div style="width:45px; height:45px">
                   <img id="logo" src="../../assets/logo.png" alt="" width=45 height=45>
                 </div>
-                <span class=" logo_text">
-                    <p>机票预订系统 预定界面</p>
-                </span>
+                <span class=" logo_text">机票预订系统 预定界面</span>
             </div>
             <div class="mainBox_ct">
                 <div id="conditionArea">
                     <searchOption></searchOption>
                 </div>
-                <el-divider />
-                <div id="listArea"></div>
+                <el-divider style="margin-top: 5px"/>
+                <div id="listArea">
+                    <search-list></search-list>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
-<script lang="ts" setup>
-import  searchOption   from "@/components/SchedulePagePart/SearchOption.vue";
+<script setup>
+import SearchOption from "@/components/SchedulePagePart/SearchOption";
+import SearchList from "@/components/SchedulePagePart/SearchList";
 
 </script>
 
@@ -40,8 +41,8 @@ import  searchOption   from "@/components/SchedulePagePart/SearchOption.vue";
 }
 
 .main_ct {
-    width: 70%;
-    height: 70%;
+    width: 75%;
+    height: 650px;
     text-align: center;
     position: absolute;
     top: 0;
@@ -98,6 +99,15 @@ import  searchOption   from "@/components/SchedulePagePart/SearchOption.vue";
     margin-top: 10px;
 }
 
+#listArea {
+    padding-top: 10px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    overflow-x: hidden;
+}
+
 .el-divider--horizontal {
     margin: 0 auto;
     display: block;
@@ -105,5 +115,7 @@ import  searchOption   from "@/components/SchedulePagePart/SearchOption.vue";
     width: 96%;
     border-top: 1px var(--el-border-color) var(--el-border-style);
 }
+
+
 </style>
 

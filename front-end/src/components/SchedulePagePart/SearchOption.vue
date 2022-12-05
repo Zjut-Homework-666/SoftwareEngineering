@@ -1,3 +1,4 @@
+<!--suppress ALL -->
 <template>
     <el-form id="searchForm" :inline="true" :model="searchForm" class="demo-form-inline">
         <el-row>
