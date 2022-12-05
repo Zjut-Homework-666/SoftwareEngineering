@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+# SoftwareEngineering
+SoftwareEngineering
+PullTest
+=======
 # front-end
 
 ## Project setup
@@ -22,3 +27,4 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+>>>>>>> dc1f3cad5b71fc7e60fed4504ac29a679cdd65ef

@@ -67,7 +67,7 @@
     </el-form>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { reactive } from 'vue'
 
 const searchForm = reactive({

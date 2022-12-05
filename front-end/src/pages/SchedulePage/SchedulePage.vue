@@ -15,17 +15,14 @@
                     <searchOption></searchOption>
                 </div>
                 <el-divider />
-                <div id="listArea">
-                    <search-list></search-list>
-                </div>
+                <div id="listArea"></div>
             </div>
         </div>
     </div>
 </template>
 
-<script setup>
-import SearchOption from "@/components/SchedulePagePart/SearchOption";
-import SearchList from "@/components/SchedulePagePart/SearchList";
+<script lang="ts" setup>
+import  searchOption   from "@/components/SchedulePagePart/SearchOption.vue";
 
 </script>
 
@@ -101,13 +98,6 @@ import SearchList from "@/components/SchedulePagePart/SearchList";
     margin-top: 10px;
 }
 
-#listArea {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-flow: column;
-}
-
 .el-divider--horizontal {
     margin: 0 auto;
     display: block;
@@ -115,7 +105,5 @@ import SearchList from "@/components/SchedulePagePart/SearchList";
     width: 96%;
     border-top: 1px var(--el-border-color) var(--el-border-style);
 }
-
-
 </style>
 
