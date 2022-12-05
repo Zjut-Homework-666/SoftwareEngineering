@@ -13,7 +13,7 @@ import (
 type UserInfo struct {
 	Name  string `gorm:"column:" json:"name"`
 	Sex   string `gorm:"column:" json:"sex"`
-	Phone string `gorm:"column:" json:"phone"`
+	Phone int    `gorm:"column:" json:"phone"`
 	Mail  string `gorm:"column:" json:"mail"`
 	Id    string `gorm:"column:" json:"id"`
 }
@@ -31,16 +31,6 @@ type FlightInfo struct {
 	DepTime  string `gorm:"column:" json:"depTime"`
 }
 
-// 结构体的嵌套加载请使用gorm中的preload
-type OrderInfo struct {
-	OrderTime   string `gorm:"column:" json:"orderTime"`
-	Price       string `gorm:"column:" json:"price"`
-	OrderId     int    `gorm:"column:" json:"orderId"`
-	OrderStatus string `gorm:"column:" json:"orderStatus"`
-	UserInfo    UserInfo
-	FlightSeat  FlightSeat
-}
-
 type FlightDetailInfo struct {
 	Flight   string `gorm:"column:" json:"flight"`
 	ArrPlace string `gorm:"column:" json:"arrPlace"`
@@ -52,11 +42,64 @@ type FlightDetailInfo struct {
 	Status   string `gorm:"column:" json:"status"`
 }
 
-type FlightDetailSeat struct {
+type SeatDetailInfo struct {
 	Flight string `gorm:"column:" json:"flight"`
 	Seat   string `gorm:"column:" json:"seat"`
 	Price  int    `gorm:"column:" json:"price"`
 	Status string `gorm:"column:" json:"status"`
+}
+
+// 结构体的嵌套加载请使用gorm中的preload
+type OrderInfo struct {
+	OrderTime   string     `gorm:"column:" json:"orderTime"`
+	Price       string     `gorm:"column:" json:"price"`
+	OrderId     int        `gorm:"column:" json:"orderId"`
+	OrderStatus string     `gorm:"column:" json:"orderStatus"`
+	UserInfo    UserInfo   `json:"userInfo"`
+	FlightSeat  FlightSeat `json:"flightSeat"`
+}
+
+type ResponeInfo struct {
+	Msg  string `json:"msg"`
+	Code int    `json:"code"`
+}
+
+type ReserveInfo struct {
+	UserInfo   UserInfo   `json:"userInfo"`
+	FlightSeat FlightSeat `json:"flightSeat"`
+}
+
+type ReserverReturn struct {
+	ResponeInfo ResponeInfo `json:"responeInfo"`
+	PayUrl      string      `json:"payUrl"`
+	CancelUrl   string      `json:"cancelUrl"`
+}
+
+type PayReturn struct {
+	ResponeInfo ResponeInfo `json:"responeInfo"`
+	FlightInfo  FlightInfo  `json:"flightInfo"`
+	OrderInfo   OrderInfo   `json:"orderInfo"`
+}
+
+type CheckInfo struct {
+	UserInfo UserInfo `json:"userInfo"`
+}
+
+type CheckReturn struct {
+	Name        string      `json:"name"`
+	FlightInfo  FlightInfo  `json:"flightInfo"`
+	FlightSeat  FlightSeat  `json:"flightSeat"`
+	ResponeInfo ResponeInfo `json:"responeInfo"`
+}
+
+type FlightReturn struct {
+	Flights     []FlightDetailInfo `json:"flights"`
+	ResponeInfo ResponeInfo        `json:"responeInfo"`
+}
+
+type SeatReturn struct {
+	Seats       []SeatDetailInfo `json:"seats"`
+	ResponeInfo ResponeInfo      `json:"responeInfo"`
 }
 
 func CorsMiddleWare() gin.HandlerFunc {
@@ -91,7 +134,6 @@ func InitDB() *gorm.DB {
 		port,
 		database,
 		charset)
-
 	db, err := gorm.Open(mysql.New(mysql.Config{DSN: args}))
 	if err != nil {
 		panic("failed to connect database, err:" + err.Error())
@@ -124,7 +166,10 @@ func main() {
 	})
 
 	router.POST("/reserve", func(c *gin.Context) {
+		reserveInfo := ReserveInfo{}
+		c.BindJSON(&reserveInfo)
 		// TODO:王瑞沣,难度⭐⭐
+		// TODO:二维码部分,严伟志难度⭐⭐
 	})
 
 	router.GET("/pay", func(c *gin.Context) {
@@ -132,10 +177,12 @@ func main() {
 	})
 
 	router.GET("/flights", func(c *gin.Context) {
-		//TODO:严伟志,难度⭐⭐⭐⭐⭐
+		// TODO:严伟志,难度⭐⭐⭐⭐⭐
 	})
 
 	router.POST("/check", func(c *gin.Context) {
+		checkInfo := CheckInfo{}
+		c.BindJSON(&checkInfo)
 		// TODO:杨子博,难度⭐⭐
 	})
 
