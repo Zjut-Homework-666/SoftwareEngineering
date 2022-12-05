@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -121,11 +122,11 @@ func CorsMiddleWare() gin.HandlerFunc {
 	}
 }
 func InitDB() *gorm.DB {
-	username := ""
-	password := ""
-	host := "47.96.8.176"
+	username := "root"
+	password := "12345678"
+	host := "121.5.157.39"
 	port := "3306"
-	database := "AAA_MIS08"
+	database := "AirTicket"
 	charset := "utf8"
 	args := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s&parseTime=true",
 		username,
@@ -143,7 +144,7 @@ func InitDB() *gorm.DB {
 
 }
 
-// var db = InitDB()
+var db = InitDB()
 
 //发送邮件给对应的邮箱
 func Notice() {
@@ -177,7 +178,46 @@ func main() {
 	})
 
 	router.GET("/flights", func(c *gin.Context) {
-		// TODO:严伟志,难度⭐⭐⭐⭐⭐
+		flightReturn := FlightReturn{}
+		flightReturn.ResponeInfo.Msg = "Success"
+		flight := c.Query("flight")
+		if flight != "" {
+			result := db.Table(flight).Find(&flightReturn.Flights, FlightDetailInfo{Flight: flight})
+			if result.Error != nil {
+				flightReturn.ResponeInfo.Msg = result.Error.Error()
+				flightReturn.ResponeInfo.Code = 1
+			}
+			c.JSON(http.StatusOK, flightReturn)
+			return
+		}
+		limit, _ := strconv.Atoi(c.Query("limit"))
+		pages, _ := strconv.Atoi(c.Query("pages"))
+		arrPlace := "%" + c.Query("arrPlace") + "%"
+		depPlace := "%" + c.Query("depPlace") + "%"
+		price, _ := strconv.Atoi(c.Query("price"))
+		status, _ := strconv.Atoi(c.Query("status"))
+		sort, _ := strconv.Atoi(c.Query("sort"))
+		statuss := []string{"已满", "停飞", "未开售", "售票中"}
+		for i := 0; i < 4; i++ {
+			if status%2 == 0 {
+				statuss[i] = ""
+			}
+			status /= 2
+		}
+		order := ""
+		orderList := []string{"arrTime", "depTime", "price", "seats"}
+		order = orderList[sort/2]
+		if sort%2 == 1 {
+			order += " desc"
+		}
+		fmt.Println(statuss, order)
+		str := "arrPlace LIKE ? AND depPlace LIKE ? AND price < ? AND status IN (?)"
+		result := db.Table("Flights").Where(str, arrPlace, depPlace, price, statuss).Order(order).Limit(limit).Offset(limit * (pages - 1)).Find(&flightReturn.Flights)
+		if result.Error != nil {
+			flightReturn.ResponeInfo.Msg = result.Error.Error()
+			flightReturn.ResponeInfo.Code = 1
+		}
+		c.JSON(http.StatusOK, flightReturn)
 	})
 
 	router.POST("/check", func(c *gin.Context) {
