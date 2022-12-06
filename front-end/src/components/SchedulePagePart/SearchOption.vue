@@ -69,7 +69,9 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { reactive,getCurrentInstance } from 'vue'
+// import Qs from 'qs'
+import axios from 'axios';
 
 const searchForm = reactive({
     flight: '',
@@ -79,8 +81,34 @@ const searchForm = reactive({
     price: [0, 1000],
 })
 
+const proxy :any = getCurrentInstance().appContext.config.globalProperties
+
 const submitSearchForm = () => {
     console.log('submit!')
+
+    axios.get('http://localhost:'+proxy.$BackendPort+"/flights").then(function (ret){
+        console.log("successuful!")
+        console.log(ret)
+    })
+
+    // axios.post('http://127.0.0.1:"+BackendPort+"/api/Pub/Course' + '?Limit=10&Pages=' + Number(1).toString(), {
+    //     "No": SearchNo.value,
+    //     "Name": SearchName.value,
+    //     "Credit": SearchCredit.value,
+    //     "Hour": SearchHour.value,
+    //     "Method": SearchMethod.value,
+    //     "Sem": SearchSem.value,
+    //     "Tno": SearchTno.value,
+    //     "Tname": SearchTname.value
+    // })
+    //     .then(function (ret) {
+    //         console.log(ret.data)
+    //         for (let i = 0; i < ret.data.len; i++) {
+    //             // totalPrice += (this.books[i].price) * (this.books[i].count);
+    //             tableData.value.push(ret.data.data[i])
+    //         }
+    //         TeaTotal.value = ret.data.count
+    //     })
 }
 </script>
 

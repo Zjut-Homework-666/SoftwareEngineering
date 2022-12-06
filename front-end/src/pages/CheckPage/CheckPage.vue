@@ -1,7 +1,7 @@
 <template>
     <!-- ct:  container -->
     <div id="ct">
-        <div class="main_ct">
+        <div class="Main_ct">
             <div class="logo_ct">
                 <div style="width:45px; height:45px">
                   <img id="logo" src="../../assets/logo.png" alt="" width=45 height=45>
@@ -12,7 +12,6 @@
 
             </div>
             <div class="mainBox_ct">
-                    asdadasd
                 </div>
         </div>
     </div>
