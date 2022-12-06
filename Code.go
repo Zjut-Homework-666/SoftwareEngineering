@@ -1,15 +1,22 @@
 package main
 
 import (
+	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
+
+var ip = "121.5.157.39"
+var port = ":8089"
 
 type UserInfo struct {
 	Name  string `gorm:"column:name" json:"name"`
@@ -74,10 +81,6 @@ type ReserveReturn struct {
 	ResponeInfo ResponeInfo `json:"responeInfo"`
 	PayUrl      string      `json:"payUrl"`
 	CancelUrl   string      `json:"cancelUrl"`
-}
-
-type PayReturn struct {
-	ResponeInfo ResponeInfo `json:"responeInfo"`
 	FlightInfo  FlightInfo  `json:"flightInfo"`
 	OrderInfo   OrderInfo   `json:"orderInfo"`
 }
@@ -124,7 +127,7 @@ func CorsMiddleWare() gin.HandlerFunc {
 func InitDB() *gorm.DB {
 	username := "root"
 	password := "12345678"
-	host := "121.5.157.39"
+	host := ip
 	port := "3306"
 	database := "AirTicket"
 	charset := "utf8"
@@ -139,9 +142,7 @@ func InitDB() *gorm.DB {
 	if err != nil {
 		panic("failed to connect database, err:" + err.Error())
 	}
-
 	return db
-
 }
 func Fuzz(str string) string {
 	if str != "" {
@@ -149,20 +150,32 @@ func Fuzz(str string) string {
 	}
 	return str
 }
-
-var db = InitDB()
+func Md5(str string) string {
+	c := md5.New()
+	c.Write([]byte(str))
+	bytes := c.Sum(nil)
+	return hex.EncodeToString(bytes)
+}
 
 //发送邮件给对应的邮箱
 func Notice() {
 	//TODO:严伟志,难度⭐⭐⭐⭐⭐
 }
 
-// 预定完成生成订单后生成线程调用该函数，使其以参数2调用pay
-func Cancel() {
-	// TODO:王瑞沣,难度⭐⭐
-}
-
 func main() {
+	db := InitDB()
+
+	//初始化一个管道和Map
+	orderChan := make(chan int, 1)
+	orderMap := make(map[int](context.CancelFunc))
+	//一直查看管道内是否有数据，有的话将取消Map中对应ID的协程
+	go func() {
+		for {
+			id := <-orderChan
+			orderMap[id]()
+			delete(orderMap, id)
+		}
+	}()
 
 	router := gin.Default()
 	router.Use(CorsMiddleWare()) //避免跨域拦截
@@ -177,12 +190,55 @@ func main() {
 		c.BindJSON(&reserveInfo)
 		reserveReturn := ReserveReturn{}
 		reserveReturn.ResponeInfo.Code = 0
-		// TODO:王瑞沣,难度⭐⭐
-		// TODO:二维码部分,严伟志难度⭐⭐
+		// TODO:王瑞沣,难度⭐⭐,接收预定信息,更新机次座位数据库与生成订单
+
+		//部分参数初始化
+		orderId := 1
+		id := strconv.Itoa(orderId)
+		checkCode := Md5(id)
+		str1 := "http://" + ip + port + "/pay?orderId=" + id
+		str2 := "&checkCode=" + checkCode + "&payStatus="
+
+		//返回预定信息
+		reserveReturn.ResponeInfo.Msg = "Ticket booked successfully, waiting for payment"
+		reserveReturn.PayUrl = str1 + str2 + "0"
+		reserveReturn.CancelUrl = str1 + str2 + "1"
+		c.JSON(http.StatusOK, reserveReturn)
+
+		//生成一个十五分钟后自动取消的协程，并将其取消函数绑定至Map
+		d := time.Now().Add(time.Minute * 15)
+		ctx, cancel := context.WithDeadline(context.Background(), d) //
+		orderMap[orderId] = cancel
+		defer cancel()
+
+		//等待协程取消
+		<-ctx.Done()
+		//因为超时导致的取消
+		if ctx.Err() == context.DeadlineExceeded {
+			resp, err := http.Get(str1 + str2 + "1")
+			if err != nil {
+				reserveReturn.ResponeInfo.Msg = err.Error()
+				reserveReturn.ResponeInfo.Code = 4
+			} else {
+				reserveReturn.ResponeInfo.Msg = "Order is cancelled after timeout."
+				reserveReturn.ResponeInfo.Code = 3
+			}
+			resp.Body.Close()
+		} else { //手动进行的取消，即付款成功或取消付款
+			reserveReturn.ResponeInfo.Msg = "The order ends normally."
+			reserveReturn.ResponeInfo.Code = 2
+		}
+		//返回数据
+		c.JSON(http.StatusOK, reserveReturn)
 	})
 
 	router.GET("/pay", func(c *gin.Context) {
-		// TODO:王瑞沣,难度⭐⭐⭐
+		// TODO:王瑞沣,难度⭐⭐⭐,更新机次座位数据库与订单数据库
+
+		// 通知Web网页端
+		orderId := 1
+		// 向管道内放入完成的ID
+		orderChan <- orderId
 	})
 
 	router.GET("/flights", func(c *gin.Context) {
@@ -223,5 +279,5 @@ func main() {
 		// TODO:杨子博,难度⭐
 	})
 
-	router.Run(":8089")
+	router.Run(port)
 }
