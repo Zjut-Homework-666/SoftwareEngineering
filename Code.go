@@ -12,50 +12,50 @@ import (
 )
 
 type UserInfo struct {
-	Name  string `gorm:"column:" json:"name"`
-	Sex   string `gorm:"column:" json:"sex"`
-	Phone int    `gorm:"column:" json:"phone"`
-	Mail  string `gorm:"column:" json:"mail"`
-	Id    string `gorm:"column:" json:"id"`
+	Name  string `gorm:"column:name" json:"name"`
+	Sex   string `gorm:"column:sex" json:"sex"`
+	Phone int    `gorm:"column:phone" json:"phone"`
+	Mail  string `gorm:"column:mail" json:"mail"`
+	Id    string `gorm:"column:id" json:"id"`
 }
 
 type FlightSeat struct {
-	Flight string `gorm:"column:" json:"flight"`
-	Seat   string `gorm:"column:" json:"seat"`
+	Flight string `gorm:"column:flight" json:"flight"`
+	Seat   string `gorm:"column:seat" json:"seat"`
 }
 
 type FlightInfo struct {
-	Flight   string `gorm:"column:" json:"flight"`
-	ArrPlace string `gorm:"column:" json:"arrPlace"`
-	DepPlace string `gorm:"column:" json:"depPlace"`
-	ArrTime  string `gorm:"column:" json:"arrTime"`
-	DepTime  string `gorm:"column:" json:"depTime"`
+	Flight   string `gorm:"column:flight" json:"flight"`
+	ArrPlace string `gorm:"column:arrPlace" json:"arrPlace"`
+	DepPlace string `gorm:"column:depPlace" json:"depPlace"`
+	ArrTime  string `gorm:"column:arrTime" json:"arrTime"`
+	DepTime  string `gorm:"column:depTime" json:"depTime"`
 }
 
 type FlightDetailInfo struct {
-	Flight   string `gorm:"column:" json:"flight"`
-	ArrPlace string `gorm:"column:" json:"arrPlace"`
-	DepPlace string `gorm:"column:" json:"depPlace"`
-	ArrTime  string `gorm:"column:" json:"arrTime"`
-	DepTime  string `gorm:"column:" json:"depTime"`
-	Price    int    `gorm:"column:" json:"price"`
-	Seats    int    `gorm:"column:" json:"seats"`
-	Status   string `gorm:"column:" json:"status"`
+	Flight      string `gorm:"column:flight" json:"flight"`
+	ArrPlace    string `gorm:"column:arrPlace" json:"arrPlace"`
+	DepPlace    string `gorm:"column:depPlace" json:"depPlace"`
+	ArrTime     string `gorm:"column:arrTime" json:"arrTime"`
+	DepTime     string `gorm:"column:depTime" json:"depTime"`
+	LowestPrice int    `gorm:"column:lowestPrice" json:"lowestPrice"`
+	SeatLeft    int    `gorm:"column:seatLeft" json:"seatLeft"`
+	Status      string `gorm:"column:status" json:"status"`
 }
 
 type SeatDetailInfo struct {
-	Flight string `gorm:"column:" json:"flight"`
-	Seat   string `gorm:"column:" json:"seat"`
-	Price  int    `gorm:"column:" json:"price"`
-	Status string `gorm:"column:" json:"status"`
+	Flight string `gorm:"column:flight" json:"flight"`
+	Seat   string `gorm:"column:seat" json:"seat"`
+	Price  int    `gorm:"column:price" json:"price"`
+	Status string `gorm:"column:status" json:"status"`
 }
 
 // 结构体的嵌套加载请使用gorm中的preload
 type OrderInfo struct {
-	OrderTime   string     `gorm:"column:" json:"orderTime"`
-	Price       string     `gorm:"column:" json:"price"`
-	OrderId     int        `gorm:"column:" json:"orderId"`
-	OrderStatus string     `gorm:"column:" json:"orderStatus"`
+	OrderTime   string     `gorm:"column:orderTime" json:"orderTime"`
+	Price       string     `gorm:"column:price" json:"price"`
+	OrderId     int        `gorm:"column:orderId" json:"orderId"`
+	OrderStatus string     `gorm:"column:orderStatus" json:"orderStatus"`
 	UserInfo    UserInfo   `json:"userInfo"`
 	FlightSeat  FlightSeat `json:"flightSeat"`
 }
@@ -70,7 +70,7 @@ type ReserveInfo struct {
 	FlightSeat FlightSeat `json:"flightSeat"`
 }
 
-type ReserverReturn struct {
+type ReserveReturn struct {
 	ResponeInfo ResponeInfo `json:"responeInfo"`
 	PayUrl      string      `json:"payUrl"`
 	CancelUrl   string      `json:"cancelUrl"`
@@ -143,6 +143,12 @@ func InitDB() *gorm.DB {
 	return db
 
 }
+func Fuzz(str string) string {
+	if str != "" {
+		str = "%" + str + "%"
+	}
+	return str
+}
 
 var db = InitDB()
 
@@ -169,6 +175,8 @@ func main() {
 	router.POST("/reserve", func(c *gin.Context) {
 		reserveInfo := ReserveInfo{}
 		c.BindJSON(&reserveInfo)
+		reserveReturn := ReserveReturn{}
+		reserveReturn.ResponeInfo.Code = 0
 		// TODO:王瑞沣,难度⭐⭐
 		// TODO:二维码部分,严伟志难度⭐⭐
 	})
@@ -182,7 +190,7 @@ func main() {
 		flightReturn.ResponeInfo.Msg = "Success"
 		flight := c.Query("flight")
 		if flight != "" {
-			result := db.Table(flight).Find(&flightReturn.Flights, FlightDetailInfo{Flight: flight})
+			result := db.Table("flightInfo").Find(&flightReturn.Flights, FlightDetailInfo{Flight: flight})
 			if result.Error != nil {
 				flightReturn.ResponeInfo.Msg = result.Error.Error()
 				flightReturn.ResponeInfo.Code = 1
@@ -190,29 +198,14 @@ func main() {
 			c.JSON(http.StatusOK, flightReturn)
 			return
 		}
-		limit, _ := strconv.Atoi(c.Query("limit"))
-		pages, _ := strconv.Atoi(c.Query("pages"))
-		arrPlace := "%" + c.Query("arrPlace") + "%"
-		depPlace := "%" + c.Query("depPlace") + "%"
-		price, _ := strconv.Atoi(c.Query("price"))
-		status, _ := strconv.Atoi(c.Query("status"))
-		sort, _ := strconv.Atoi(c.Query("sort"))
-		statuss := []string{"已满", "停飞", "未开售", "售票中"}
-		for i := 0; i < 4; i++ {
-			if status%2 == 0 {
-				statuss[i] = ""
-			}
-			status /= 2
-		}
-		order := ""
-		orderList := []string{"arrTime", "depTime", "price", "seats"}
-		order = orderList[sort/2]
-		if sort%2 == 1 {
-			order += " desc"
-		}
-		fmt.Println(statuss, order)
-		str := "arrPlace LIKE ? AND depPlace LIKE ? AND price < ? AND status IN (?)"
-		result := db.Table("Flights").Where(str, arrPlace, depPlace, price, statuss).Order(order).Limit(limit).Offset(limit * (pages - 1)).Find(&flightReturn.Flights)
+
+		arrPlace := Fuzz(c.Query("arrPlace"))
+		depPlace := Fuzz(c.Query("depPlace"))
+		date := Fuzz(c.Query("date"))
+		minPrice, _ := strconv.Atoi(c.Query("minPrice"))
+		maxPrice, _ := strconv.Atoi(c.Query("maxPrice"))
+		str := "arrPlace LIKE ? AND depPlace LIKE ? AND arrTime LIKE ? AND lowestPrice > ? AND lowestPrice < ?"
+		result := db.Table("flightInfo").Where(str, arrPlace, depPlace, date, minPrice, maxPrice).Find(&flightReturn.Flights)
 		if result.Error != nil {
 			flightReturn.ResponeInfo.Msg = result.Error.Error()
 			flightReturn.ResponeInfo.Code = 1
