@@ -4,6 +4,8 @@ import CheckPage from "@/pages/CheckPage/CheckPage.vue";
 import SchedulePage from "@/pages/SchedulePage/SchedulePage.vue";
 import PaymentSuccessfuledPage from "@/pages/PaymentPage/PaymentSuccessfulPage.vue";
 import PaymentFailedPage from "@/pages/PaymentPage/PaymentFailedPage.vue";
+
+import test from "@/pages/testHome/testHome.vue";
 const routes = [{
         path: "/",
         component: HomePage
@@ -19,7 +21,10 @@ const routes = [{
     }, {
         path: "/PaymentFail",
         component: PaymentFailedPage
-    }, {
+    },{
+        path: "/testHome",
+        component: test
+    },{
         path: "/:pathMatch(.*)",
         redirect: "/"
     }
