@@ -11,7 +11,7 @@
                 </span>
             </div>
             <div class="mainBox_ct">
-                核验信息
+                <CheckPage_bts></CheckPage_bts>
             </div>
         </div>
     </div>
@@ -80,12 +80,12 @@
 
 </style>
 
-<script>
+<script setup>
 // import HomePage_bts from "./HomePage_bts.vue"
-
-export default {
-    name: 'HomePage',
-    methods: {}
-}
+import CheckPage_bts from "./CheckPage_bts.vue";
+// export default {
+//     name: 'HomePage',
+//     methods: {}
+// }
 
 </script>
