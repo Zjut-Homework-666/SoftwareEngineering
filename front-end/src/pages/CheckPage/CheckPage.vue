@@ -6,13 +6,19 @@
                 <span class=" logo_text">
                     <p>机票预订系统 核验界面</p>
                 </span>
-
             </div>
             <div class="mainBox_ct">
-                    asdadasd
-                </div>
+                核验信息
+                <el-input
+                v-model="input1"
+                class="w-50 m-2"
+                size="large"
+                placeholder="姓名"
+                />
+            </div>
         </div>
     </div>
+    
 </template>
 
 <style>
@@ -63,6 +69,7 @@
         rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
     border-radius: 15px;
 }
+
 </style>
 
 <script>
