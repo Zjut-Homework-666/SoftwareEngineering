@@ -3,7 +3,7 @@
     <div id="ct">
         <div class="main_ct">
             <div class="logo_ct">
-                <!-- 
+                <!--
                 原型里的logo下不下来
                 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -24,7 +24,7 @@
     </div>
 </template>
 
-<style>
+<style scoped>
 * {
     margin: 0;
     padding: 0;
@@ -64,7 +64,7 @@
     color: #336B9F;
 }
 
-</style>
+</stylescoped>
 
 <script>
 // import HomePage_bts from "./HomePage_bts.vue"

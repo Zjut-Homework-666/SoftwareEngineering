@@ -3,47 +3,46 @@
     <div id="ct">
         <div class="main_ct">
             <div class="logo_ct">
-                <!-- 
-                原型里的logo下不下来
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                -->
-                <span class=" logo_text">
-                    <p>机票预订系统 预定界面</p>
-                </span>
+                <div style="width:45px; height:45px">
+                  <img id="logo" src="../../assets/logo.png" alt="" width=45 height=45>
+                </div>
+                <span class=" logo_text">机票预订系统 预定界面</span>
             </div>
             <div class="mainBox_ct">
-                asdadasd
+                <div id="conditionArea">
+                    <searchOption></searchOption>
+                </div>
+                <el-divider style="margin-top: 5px"/>
+                <div id="listArea">
+                    <search-list></search-list>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
-<style>
+<script setup>
+import SearchOption from "@/components/SchedulePagePart/SearchOption";
+import SearchList from "@/components/SchedulePagePart/SearchList";
+
+</script>
+
+
+<style scoped>
 * {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-
 }
 
 #ct {
     background-color: #e9e9e9;
-
 }
 
 .main_ct {
-    width: 70%;
-    height: 70%;
+    width: 75%;
+    height: 650px;
     text-align: center;
     position: absolute;
     top: 0;
@@ -56,35 +55,67 @@
 
 .logo_ct {
     width: 100%;
-    height: 10%;
+    height: 60px;
+    line-height: 45px;
     text-align: left;
-    margin-top: -5%;
+    display: flex;
+    flex-direction: row;
+}
+
+#logo {
+    object-fit:contain;
+    vertical-align: middle;
 }
 
 .logo_text {
+    width: 100%;
+    height: 100%;
     font-size: 25px;
     font-weight: bold;
     text-align: left;
     color: #336B9F;
+    margin-left: 10px;
+    vertical-align: middle;
 }
 
 .mainBox_ct {
+    height: 100%;
+    width: 100%;
     position: absolute;
+    display: flex;
+    justify-content: left;
+    flex-flow: column;
     background-color: #f8f6f6;
     border: 1px solid #cac8c8;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
-        rgba(0, 0, 0, 0.3) 0px 30px 60px -30px,
-        rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+    box-shadow: rgba(50, 50, 93, 0.25) 0 50px 100px -20px,
+        rgba(0, 0, 0, 0.3) 0 30px 60px -30px,
+        rgba(10, 37, 64, 0.35) 0 -2px 6px 0 inset;
     border-radius: 15px;
 }
-</style>
 
-<script>
-// import HomePage_bts from "./HomePage_bts.vue"
-
-export default {
-    name: 'HomePage',
-    methods: {}
+#conditionArea {
+    width: 100%;
+    height: 40%;
+    margin-top: 10px;
 }
 
-</script>
+#listArea {
+    padding-top: 10px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    overflow-x: hidden;
+}
+
+.el-divider--horizontal {
+    margin: 0 auto;
+    display: block;
+    height: 1px;
+    width: 96%;
+    border-top: 1px var(--el-border-color) var(--el-border-style);
+}
+
+
+</style>
+

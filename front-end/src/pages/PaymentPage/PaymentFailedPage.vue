@@ -2,11 +2,11 @@
 <template>
     <!-- ct:  container -->
     <div id="ct">
-        
+
     </div>
 </template>
 
-<style>
+<style scoped>
 * {
     margin: 0;
     padding: 0;
