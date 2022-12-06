@@ -190,7 +190,7 @@ func main() {
 		c.BindJSON(&reserveInfo)
 		reserveReturn := ReserveReturn{}
 		reserveReturn.ResponeInfo.Code = 0
-		// TODO:王瑞沣,难度⭐⭐,接收预定信息,更新机次座位数据库与生成订单
+		// TODO:王瑞沣,难度⭐⭐⭐,接收预定信息,更新机次座位数据库与生成订单
 
 		//部分参数初始化
 		orderId := 1
@@ -225,6 +225,7 @@ func main() {
 			}
 			resp.Body.Close()
 		} else { //手动进行的取消，即付款成功或取消付款
+			reserveReturn.OrderInfo.OrderStatus = "已付款"
 			reserveReturn.ResponeInfo.Msg = "The order ends normally."
 			reserveReturn.ResponeInfo.Code = 2
 		}
@@ -233,7 +234,7 @@ func main() {
 	})
 
 	router.GET("/pay", func(c *gin.Context) {
-		// TODO:王瑞沣,难度⭐⭐⭐,更新机次座位数据库与订单数据库
+		// TODO:王瑞沣,难度⭐⭐,更新机次座位数据库与订单数据库
 
 		// 通知Web网页端
 		orderId := 1
