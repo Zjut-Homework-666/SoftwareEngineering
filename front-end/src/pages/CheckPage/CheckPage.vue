@@ -12,12 +12,6 @@
             </div>
             <div class="mainBox_ct">
                 核验信息
-                <el-input
-                v-model="input1"
-                class="w-50 m-2"
-                size="large"
-                placeholder="姓名"
-                />
             </div>
         </div>
     </div>
