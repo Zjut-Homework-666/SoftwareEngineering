@@ -14,6 +14,7 @@ const app = createApp(App)
 
 // 全局方法挂载全局变量
 app.config.globalProperties.$BackendPort = "8089";
+app.config.globalProperties.$url = "http://localhost:";
 //调用方法
 // const proxy :any = getCurrentInstance().appContext.config.globalProperties
 

@@ -69,16 +69,17 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive,getCurrentInstance } from 'vue'
+import { reactive,getCurrentInstance,provide } from 'vue'
 // import Qs from 'qs'
 import axios from 'axios';
 
 const searchForm = reactive({
-    flight: '',
-    departure: '',
-    destination: '',
-    status: [],
-    price: [0, 1000],
+    flight: '',         // 航班
+    departure: '',      // 出发地
+    destination: '',    // 目的地
+    status: [],         // 状态
+    price: [0, 1000],   // 价格区间
+    date:''             // 日期
 })
 
 const proxy :any = getCurrentInstance().appContext.config.globalProperties
@@ -86,11 +87,20 @@ const proxy :any = getCurrentInstance().appContext.config.globalProperties
 const submitSearchForm = () => {
     console.log('submit!')
 
-    axios.get('http://localhost:'+proxy.$BackendPort+"/flights").then(function (ret){
+    axios.get(proxy.$url+proxy.$BackendPort+"/flights",{
+        params:{
+            flight:searchForm.flight,        // 直接指定航班
+            depPlace:searchForm.departure,    // 出发地（关键词匹配）
+            arrPlace:searchForm.destination,   // 到达地（关键词匹配）
+            minPrice:searchForm.price[0],    // 选择的最低价格
+            maxPrice:searchForm.price[1],    // 选择的最高价格   不能不填！！
+            date:searchForm.date,            // 选择的时间
+        }
+    }).then(function (ret){
         console.log("successuful!")
         console.log(ret)
+        provide('FilghtsSearcheRes',ret.data)
     })
-
     // axios.post('http://127.0.0.1:"+BackendPort+"/api/Pub/Course' + '?Limit=10&Pages=' + Number(1).toString(), {
     //     "No": SearchNo.value,
     //     "Name": SearchName.value,
