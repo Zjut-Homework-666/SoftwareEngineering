@@ -94,10 +94,13 @@ const userInfo = ref({
     ordernum:''
 })
 
-ElMessageBox.alert('信息输入错误', '提示', {
+const InfoWrong = () => {// eslint-disable-line no-unused-vars
+    ElMessageBox.alert('信息错误,请重新输入', '提示', {
     // if you want to disable its autofocus
     // autofocus: false,
     confirmButtonText: 'OK',
     // center:true
   })
+}
+
 </script>

@@ -10,6 +10,34 @@
                     <span>取消</span>
                 </el-button>
             </el-form-item>
+            <el-dialog v-model="centerDialogVisible" title="付款成功" width="30%" align-center>
+                <div class="dia">
+                    <el-form class="dia_form">
+                    <el-form-item class="dia_row" label-width="75" label="姓名:">
+                        XXXXXX
+                    </el-form-item>
+                    <el-form-item class="dia_row" label-width="75" label="性别:">
+                        XXXXXX
+                    </el-form-item>
+                    <el-form-item class="dia_row" label-width="75" label="身份证号:">
+                        XXXXXX
+                    </el-form-item>
+                    <el-form-item class="dia_row" label-width="75" label="电话号码:">
+                        XXXXXX
+                    </el-form-item>
+                    <el-form-item class="dia_row" label-width="75" label="订单编号:">
+                        XXXXXX
+                    </el-form-item>
+                    </el-form>
+                </div>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button type="primary" @click="centerDialogVisible = false">
+                            Confirm
+                        </el-button>
+                    </span>
+                </template>
+            </el-dialog>
         </el-form>
     </div>
 </template>
@@ -18,6 +46,13 @@
 #QRCode {
   object-fit:contain;
   vertical-align: middle;
+}
+.dia {
+    height: 230px;
+    overflow: auto;
+}
+.dialog-footer{
+  margin-right: 10px;
 }
 .bt_ct {
     border-radius: 15px;
@@ -43,6 +78,17 @@
     height: 90%;
 
 }
+.dia_form {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 40%;
+    height: 90%;
+
+}
 
 .bt_row {
     height: 10%;
@@ -53,7 +99,14 @@
     text-align: center;
 
 }
-
+.dia_row {
+    height: 3%;
+    width: auto;
+    margin-top: 20%;
+    margin-left: 0%;
+    justify-content: center;
+    text-align: center;
+}
 .bt {
     width: 75%;
     height: 100%;
@@ -71,11 +124,13 @@
 }
 </style>
 
-<script>
+<script >
 // import axios from 'axios';
 import router from '../../router'
 // import { ref } from 'vue'
-import {  ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+// import {  ref } from 'vue'
+
 
 export default {
     data() {
@@ -104,6 +159,10 @@ export default {
                 if (this.seconds == 0) 
                     Return()
             }, 1000)
+        },
+        Cancel() {
+            console.log("HomePage")
+            router.push('/HomePage')
         },
     }
 }

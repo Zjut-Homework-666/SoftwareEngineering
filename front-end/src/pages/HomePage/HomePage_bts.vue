@@ -68,14 +68,14 @@ const handleSchedule = () => {
     router.push('/Schedule')
 
 }
-const handleCheck = () => {
-    console.log("PaymentSuccessful")
-    router.push('/PaymentSuccessful')
-}
-
 // const handleCheck = () => {
-//     console.log("Check")
-//     router.push('/Check')
+//     console.log("PaymentSuccessful")
+//     router.push('/PaymentSuccessful')
 // }
+
+const handleCheck = () => {
+    console.log("Check")
+    router.push('/Check')
+}
 
 </script>
