@@ -97,29 +97,38 @@ const user_Info = ref({
 
 const InfoWrong = () => {// eslint-disable-line no-unused-vars
     ElMessageBox.alert('信息错误,请重新输入', '提示', {
-    // if you want to disable its autofocus
-    // autofocus: false,
     confirmButtonText: 'OK',
     // center:true
   })
 }
+const InfoEmpty = () => {// eslint-disable-line no-unused-vars
+    ElMessageBox.alert('信息不可为空,请重新输入', '提示', {
+    confirmButtonText: 'OK',
+  })
+}
 
 const proxy :any = getCurrentInstance().appContext.config.globalProperties
-const submitUserInfo = () =>{
-    console.log("CheckInfo!")
-    let config = {
-        headers: {'Content-Type': "multipart/json, charset=UTF-8"}
-    };
-    let userInfo = {
-        name: user_Info.value.username,
-        phone:user_Info.value.phonenum,
-        id:user_Info.value.idnum
-    };
-    axios.post(proxy.$url+proxy.$BackendPort+"/check",userInfo,config)
-        .then(function (ret){
-            console.log(ret.data)
-
-    })
+const submitUserInfo = () => {
+    if (user_Info.value.username.length > 0
+        && user_Info.value.phonenum.length > 0
+        && user_Info.value.idnum.length > 0
+        && user_Info.value.email.length > 0
+        && user_Info.value.ordernum.length > 0) {
+        console.log("CheckInfo!")
+        let config = {
+            headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
+        };
+        let userInfo = {
+            name: user_Info.value.username,
+            phone:user_Info.value.phonenum,
+            id:user_Info.value.idnum
+        };
+        axios.post(proxy.$url+proxy.$BackendPort+"/check",userInfo,config)
+            .then(function (ret){
+                console.log(ret.data)
+            })
+    } else 
+        InfoEmpty()
 }
 
 </script>
