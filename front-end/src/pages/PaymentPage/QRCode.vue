@@ -1,4 +1,3 @@
-
 <template>
     <div class="bt_ct">
         <el-form class="bt_form" label-width="70px">
