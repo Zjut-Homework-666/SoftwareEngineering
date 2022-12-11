@@ -70,7 +70,7 @@
     </div>
     <el-divider style="margin-top: 5px"/>
     <div id="listArea">
-        <el-table ref="tableRef" row-key="date" :data="showPage" style="width: auto; height: 70%; margin: 0 auto" v-fit-columns>
+        <el-table ref="tableRef" row-key="date" :data="showPage" style="width: auto; height: 70%; margin: 0 auto" :key="Math.random()" v-fit-columns>
             <el-table-column prop="flight" label="航班号" width="120"
             />
             <el-table-column prop="depPlace" label="出发" width="120" sortable column-key="depPlace"
@@ -130,7 +130,7 @@
                 </template>
             </el-table-column>
             <el-table-column label="操作" width="150">
-                <el-button type="primary" size="small" @click="ScheduleButtonClicked">预订</el-button>
+                <el-button type="primary" size="default" style="width: 40%" @click="ScheduleButtonClicked">预订</el-button>
             </el-table-column>
         </el-table>
         <div id="pagination">
@@ -278,16 +278,17 @@ const tableData = ref([
     }])
 
 // 显示数据
-let showPage: flightDetailInfo[] = tableData.value.slice(0, pageSize.value);
+// let showPage: flightDetailInfo[] = tableData.value.slice(0, pageSize.value);
+let showPage = ref([])
 
 // 每页条数控制
 const handleSizeChange = () => {
-    showPage = tableData.value.slice(0, pageSize.value);
+    showPage.value = tableData.value.slice(0, pageSize.value);
 }
 
 // 换页控制
 const handleCurrentChange = () => {
-    showPage = tableData.value.slice((currentPage.value-1)*pageSize.value, currentPage.value*pageSize.value);
+    showPage.value = tableData.value.slice((currentPage.value-1)*pageSize.value, currentPage.value*pageSize.value);
 }
 // 页面刷新时 默认请求空条件查询
 onMounted(() => {
@@ -300,10 +301,9 @@ onMounted(() => {
             maxPrice:1000,    // 选择的最高价格   不能不填！！
             date:'',            // 选择的时间
         }
-    })
-        .then(function (ret) {
-            console.log(ret.data)
-            // tableData.value = []
+    }).then(function (ret) {
+            // console.log(ret.data)
+            tableData.value = []
             for(var i=0;i<ret.data.flights.length;i++){
                 let tempflight : flightDetailInfo = {
                     flight : ret.data.flights[i].flight,  // 机次
@@ -313,21 +313,24 @@ onMounted(() => {
                     arrTime : ret.data.flights[i].arrTime,  // 到达时间
                     price : ret.data.flights[i].lowestPrice,  // 最低价格
                     seats : ret.data.flights[i].seatLeft,  // 剩余座位
-                    status : ret.data.flights[i].seatLeft  // 状态
+                    status : ret.data.flights[i].status  // 状态
                 }
                 tableData.value.push(tempflight)
             }
+            console.log(tableData.value)
+            showPage.value = tableData.value.slice(0, pageSize.value);
         })
 })
 // 查询按钮
 const submitSearchForm = () => {
     console.log('submit!')
-    console.log(searchForm.flight)
-    console.log(searchForm.departure)
-    console.log(searchForm.destination)
-    console.log(searchForm.price[0])
-    console.log(searchForm.price[1])
-    console.log(searchForm.date)
+    // console.log(searchForm.flight)
+    // console.log(searchForm.departure)
+    // console.log(searchForm.destination)
+    // console.log(searchForm.price[0])
+    // console.log(searchForm.price[1])
+    // console.log(searchForm.date)
+    console.log(tableData.value)
 
     axios.get(proxy.$url+proxy.$BackendPort+"/flights",{
         params:{
@@ -340,6 +343,7 @@ const submitSearchForm = () => {
         }
     }).then(function (ret){
         console.log(ret.data)
+        // 清空 tableData
         tableData.value = []
         for(var i=0;i<ret.data.flights.length;i++){
             let tempflight : flightDetailInfo = {
@@ -350,10 +354,13 @@ const submitSearchForm = () => {
                 arrTime : ret.data.flights[i].arrTime,  // 到达时间
                 price : ret.data.flights[i].lowestPrice,  // 最低价格
                 seats : ret.data.flights[i].seatLeft,  // 剩余座位
-                status : ret.data.flights[i].seatLeft  // 状态
+                status : ret.data.flights[i].status  // 状态
             }
             tableData.value.push(tempflight)
+
         }
+        console.log(tableData)
+        showPage.value = tableData.value.slice(0, pageSize.value);
     })
 }
 

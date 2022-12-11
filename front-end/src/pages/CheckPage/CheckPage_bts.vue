@@ -3,19 +3,19 @@
         <el-form class="bt_form" label-width="70px">
             <p class="title">核验信息</p>
             <el-form-item label="姓名">
-                <el-input v-model="userInfo.username" placeholder="请输入姓名" clearable></el-input>
+                <el-input v-model="user_Info.username" placeholder="请输入姓名" clearable></el-input>
             </el-form-item>
             <el-form-item label="身份证号">
-                <el-input v-model="userInfo.idnum" placeholder="请输入身份证号" clearable></el-input>
+                <el-input v-model="user_Info.idnum" placeholder="请输入身份证号" clearable></el-input>
             </el-form-item>
             <el-form-item label="手机号">
-                <el-input v-model="userInfo.phonenum" placeholder="请输入手机号" clearable></el-input>
+                <el-input v-model="user_Info.phonenum" placeholder="请输入手机号" clearable></el-input>
             </el-form-item>
             <el-form-item label="邮箱">
-                <el-input v-model="userInfo.email" placeholder="请输入邮箱" clearable></el-input>
+                <el-input v-model="user_Info.email" placeholder="请输入邮箱" clearable></el-input>
             </el-form-item>
             <el-form-item label="订单编号">
-                <el-input v-model="userInfo.ordernum" placeholder="请输入订单编号" clearable></el-input>
+                <el-input v-model="user_Info.ordernum" placeholder="请输入订单编号" clearable></el-input>
             </el-form-item>
             <el-form-item class="bt_row" label-width="0">
                 <el-button class="bt" type="primary" @click="submitUserInfo">
@@ -82,11 +82,12 @@
 <script lang="ts" setup>
 // import axios from 'axios';
 // import router from '../../router'
-import { ref } from 'vue'
+import {getCurrentInstance, ref} from 'vue'
 import { ElMessageBox } from 'element-plus'
+import axios from "axios";
 // import type { Action } from 'element-plus'
 
-const userInfo = ref({
+const user_Info = ref({
     username: '',
     idnum: '',
     phonenum: '',
@@ -101,6 +102,24 @@ const InfoWrong = () => {// eslint-disable-line no-unused-vars
     confirmButtonText: 'OK',
     // center:true
   })
+}
+
+const proxy :any = getCurrentInstance().appContext.config.globalProperties
+const submitUserInfo = () =>{
+    console.log("CheckInfo!")
+    let config = {
+        headers: {'Content-Type': "multipart/json, charset=UTF-8"}
+    };
+    let userInfo = {
+        name: user_Info.value.username,
+        phone:user_Info.value.phonenum,
+        id:user_Info.value.idnum
+    };
+    axios.post(proxy.$url+proxy.$BackendPort+"/check",userInfo,config)
+        .then(function (ret){
+            console.log(ret.data)
+
+    })
 }
 
 </script>
