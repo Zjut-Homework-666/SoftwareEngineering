@@ -145,9 +145,7 @@ func InitDB() *gorm.DB {
 	return db
 }
 func Fuzz(str string) string {
-	if str != "" {
-		str = "%" + str + "%"
-	}
+	str = "%" + str + "%"
 	return str
 }
 func Md5(str string) string {
