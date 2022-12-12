@@ -5,7 +5,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -53,16 +52,16 @@ type FlightDetailInfo struct {
 
 type SeatDetailInfo struct {
 	Flight string `gorm:"column:flight" json:"flight"`
-	Seat   string `gorm:"column:seat" json:"seat"`
+	Seat   int    `gorm:"column:seat" json:"seat"`
 	Price  int    `gorm:"column:price" json:"price"`
 	Status string `gorm:"column:status" json:"status"`
 }
 
 // 结构体的嵌套加载请使用gorm中的preload
 type OrderInfo struct {
-	OrderTime   string     `gorm:"column:orderTime" json:"orderTime"`
-	Price       string     `gorm:"column:price" json:"price"`
-	OrderId     int64      `gorm:"column:orderId" json:"orderId"`
+	OrderTime   time.Time  `gorm:"column:orderTime" json:"orderTime"`
+	Price       int        `gorm:"column:price" json:"price"`
+	OrderId     int        `gorm:"column:orderId" json:"orderId"`
 	OrderStatus string     `gorm:"column:orderStatus" json:"orderStatus"`
 	UserInfo    UserInfo   `json:"userInfo"`
 	FlightSeat  FlightSeat `json:"flightSeat"`
@@ -188,28 +187,21 @@ func main() {
 		reserveInfo := ReserveInfo{}
 		c.BindJSON(&reserveInfo)
 		reserveReturn := ReserveReturn{}
-		flightDetailInfo := FlightDetailInfo{}
 		reserveReturn.ResponeInfo.Code = 0
 		// TODO:王瑞沣,难度⭐⭐⭐,接收预定信息,更新机次座位数据库与生成订单
+
 		reserveReturn.FlightInfo.Flight = reserveInfo.FlightSeat.Flight
-		db.Table("flight").Find(&reserveReturn.FlightInfo, "flight = ?", reserveInfo.FlightSeat.Flight)
-		db.Table("flight").Find(&flightDetailInfo, "flight = ?", reserveInfo.FlightSeat.Flight)
-		flightDetailInfo.SeatLeft = flightDetailInfo.SeatLeft - 1
-		db.Table("flight").Where("flight = ?", reserveReturn.FlightInfo.Flight).Updates(map[string]interface{}{
-			"seats": &flightDetailInfo.SeatLeft,
-		}) //更新航班座位数
+		db.Table("flight").Find(&reserveReturn.FlightInfo, FlightInfo{Flight: reserveInfo.FlightSeat.Flight})
+
 		reserveReturn.OrderInfo.FlightSeat = reserveInfo.FlightSeat
 		reserveReturn.OrderInfo.UserInfo = reserveInfo.UserInfo
-		var count int64 //记录当前订单数，生成订单编号
-		db.Table("order").Count(&count)
-		reserveReturn.OrderInfo.OrderId = count
+
+		Time := time.Now()
+		reserveReturn.OrderInfo.OrderTime = Time
 		reserveReturn.OrderInfo.OrderStatus = "未付款"
-		now := time.Now().Unix()
-		t := int64(now) //外部传入的时间戳(秒为单位)，必须为int64类型
-		timeStr := time.Unix(t, 0).Format("2006-01-02 15:04:05")
-		reserveReturn.OrderInfo.OrderTime = timeStr
-		rand.Seed(time.Now().UnixNano())
-		reserveReturn.OrderInfo.Price = strconv.Itoa(rand.Intn(1500) + 500)
+
+		reserveReturn.OrderInfo.Price = 1
+
 		db.Table("order").Create(&reserveReturn.OrderInfo)
 
 		//部分参数初始化
@@ -255,13 +247,22 @@ func main() {
 
 	router.GET("/pay", func(c *gin.Context) {
 		// TODO:王瑞沣,难度⭐⭐,更新机次座位数据库与订单数据库
+		orderId, _ := strconv.Atoi(c.Query("orderId"))
+		checkCode := c.Query("checkCode")
+		id := strconv.Itoa(orderId)
+
+		if Md5(id) == checkCode {
+
+		}
+
 		reserveReturn := ReserveReturn{}
 		c.BindJSON(&reserveReturn)
 		db.Table("order").Where("orderId = ?", reserveReturn.OrderInfo.OrderId).Updates(map[string]interface{}{
 			"orderstatus": "已付款",
 		})
+
 		// 通知Web网页端
-		orderId := 1
+
 		// 向管道内放入完成的ID
 		orderChan <- orderId
 	})
