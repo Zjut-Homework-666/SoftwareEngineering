@@ -188,21 +188,26 @@ func main() {
 		c.BindJSON(&reserveInfo)
 		reserveReturn := ReserveReturn{}
 		reserveReturn.ResponeInfo.Code = 0
+		seatDetailInfo := SeatDetailInfo{}
+		flightDetailInfo := FlightDetailInfo{}
 		// TODO:王瑞沣,难度⭐⭐⭐,接收预定信息,更新机次座位数据库与生成订单
-
-		reserveReturn.FlightInfo.Flight = reserveInfo.FlightSeat.Flight
 		db.Table("flight").Find(&reserveReturn.FlightInfo, FlightInfo{Flight: reserveInfo.FlightSeat.Flight})
+		db.Table("seat").Where("flight = ? AND seat = ?", reserveInfo.FlightSeat.Flight, reserveInfo.FlightSeat.Seat).Update("status", "已预定")
 
 		reserveReturn.OrderInfo.FlightSeat = reserveInfo.FlightSeat
 		reserveReturn.OrderInfo.UserInfo = reserveInfo.UserInfo
-
 		Time := time.Now()
 		reserveReturn.OrderInfo.OrderTime = Time
 		reserveReturn.OrderInfo.OrderStatus = "未付款"
 
-		reserveReturn.OrderInfo.Price = 1
-
+		db.Table("seat").Where("flight = ? AND seat = ?", reserveInfo.FlightSeat.Flight, reserveInfo.FlightSeat.Seat).Find(&seatDetailInfo)
+		reserveReturn.OrderInfo.Price = seatDetailInfo.Price
 		db.Table("order").Create(&reserveReturn.OrderInfo)
+
+		db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: reserveInfo.FlightSeat.Flight})
+		if flightDetailInfo.SeatLeft == 0 {
+			db.Table("flight").Where("flight = ?", flightDetailInfo.Flight).Update("status", "已满")
+		}
 
 		//部分参数初始化
 		orderId := 1
@@ -247,19 +252,27 @@ func main() {
 
 	router.GET("/pay", func(c *gin.Context) {
 		// TODO:王瑞沣,难度⭐⭐,更新机次座位数据库与订单数据库
+		orderInfo := OrderInfo{}
+		flightDetailInfo := FlightDetailInfo{}
 		orderId, _ := strconv.Atoi(c.Query("orderId"))
 		checkCode := c.Query("checkCode")
+		payStatus, _ := strconv.Atoi(c.Query("payStatus"))
 		id := strconv.Itoa(orderId)
 
 		if Md5(id) == checkCode {
-
+			db.Table("order").Where("orderId = ?", id).Find(&orderInfo)
+			if payStatus == 0 { //付款成功
+				db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
+				db.Table("seat").Where("flight = ? AND seat = ?", orderInfo.FlightSeat.Flight, orderInfo.FlightSeat.Seat).Update("status", "已付款")
+				db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: orderInfo.FlightSeat.Flight})
+				if flightDetailInfo.SeatLeft == 0 {
+					db.Table("flight").Where("flight = ?", flightDetailInfo.Flight).Update("status", "已满")
+				}
+			} else { //取消订单
+				db.Table("order").Where("orderId = ?", id).Delete(&orderInfo)
+				db.Table("seat").Where("flight = ? AND seat = ?", orderInfo.FlightSeat.Flight, orderInfo.FlightSeat.Seat).Update("status", "空")
+			}
 		}
-
-		reserveReturn := ReserveReturn{}
-		c.BindJSON(&reserveReturn)
-		db.Table("order").Where("orderId = ?", reserveReturn.OrderInfo.OrderId).Updates(map[string]interface{}{
-			"orderstatus": "已付款",
-		})
 
 		// 通知Web网页端
 
