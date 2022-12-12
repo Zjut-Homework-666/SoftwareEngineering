@@ -1,7 +1,7 @@
 <template>
     <!-- ct:  container -->
     <div id="ct">
-        <div class="main_ct">
+        <div class="Main_ct">
             <div class="logo_ct">
                 <div style="width:45px; height:45px">
                   <img id="logo" src="../../assets/logo.png" alt="" width=45 height=45>
@@ -9,13 +9,13 @@
                 <span class=" logo_text">
                     <p>机票预订系统 核验界面</p>
                 </span>
-
             </div>
             <div class="mainBox_ct">
-                    asdadasd
-                </div>
+                <CheckPage_bts></CheckPage_bts>
+            </div>
         </div>
     </div>
+    
 </template>
 
 <style scoped>
@@ -42,7 +42,6 @@
     left: 0;
     right: 0;
     margin: auto;
-
 }
 
 .logo_ct {
@@ -77,14 +76,15 @@
         rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
     border-radius: 15px;
 }
+
 </style>
 
-<script>
+<script setup>
 // import HomePage_bts from "./HomePage_bts.vue"
-
-export default {
-    name: 'HomePage',
-    methods: {}
-}
+import CheckPage_bts from "./CheckPage_bts.vue";
+// export default {
+//     name: 'HomePage',
+//     methods: {}
+// }
 
 </script>
