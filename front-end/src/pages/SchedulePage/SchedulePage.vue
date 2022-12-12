@@ -9,21 +9,14 @@
                 <span class=" logo_text">机票预订系统 预定界面</span>
             </div>
             <div class="mainBox_ct">
-                <div id="conditionArea">
-                    <searchOption></searchOption>
-                </div>
-                <el-divider style="margin-top: 5px"/>
-                <div id="listArea">
-                    <search-list></search-list>
-                </div>
+                <SearchTable></SearchTable>
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import SearchOption from "@/components/SchedulePagePart/SearchOption";
-import SearchList from "@/components/SchedulePagePart/SearchList";
+import SearchTable from "@/components/SchedulePagePart/SearchTable.vue";
 
 </script>
 
@@ -93,28 +86,7 @@ import SearchList from "@/components/SchedulePagePart/SearchList";
     border-radius: 15px;
 }
 
-#conditionArea {
-    width: 100%;
-    height: 40%;
-    margin-top: 10px;
-}
 
-#listArea {
-    padding-top: 10px;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-flow: column;
-    overflow-x: hidden;
-}
-
-.el-divider--horizontal {
-    margin: 0 auto;
-    display: block;
-    height: 1px;
-    width: 96%;
-    border-top: 1px var(--el-border-color) var(--el-border-style);
-}
 
 
 </style>

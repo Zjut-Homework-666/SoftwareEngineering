@@ -16,7 +16,7 @@ module.exports = { configureWebpack: {
         options: {
           appendTsSuffixTo: [/\.vue$/],    
         }    
-      }        
+      }
     ]    
   }    
 }

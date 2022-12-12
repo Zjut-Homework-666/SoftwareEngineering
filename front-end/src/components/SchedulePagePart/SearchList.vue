@@ -156,6 +156,7 @@ const filterHandler = (
 }
 
 // 总数据
+// const tableData: flightDetailInfo[] = inject("FilghtsSearcheRes")
 const tableData: flightDetailInfo[] = [
     {
         flight: 'B-1234',
