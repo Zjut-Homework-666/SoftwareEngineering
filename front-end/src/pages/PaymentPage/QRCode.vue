@@ -32,7 +32,7 @@
                 <template #footer>
                     <span class="dialog-footer">
                         <el-button type="primary" @click="centerDialogVisible = false">
-                            Confirm
+                            确认
                         </el-button>
                     </span>
                 </template>
@@ -129,12 +129,11 @@ import router from '../../router'
 // import { ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
 
-
 export default {
     data() {
         return {
             count: '', //倒计时
-            seconds: 900 // 10天的秒数
+            seconds: 900, // 10天的秒数
         }
     },
     mounted() {
@@ -161,7 +160,7 @@ export default {
         Cancel() {
             console.log("HomePage")
             router.push('/HomePage')
-        },
+        }
     }
 }
 const Return = () => {
