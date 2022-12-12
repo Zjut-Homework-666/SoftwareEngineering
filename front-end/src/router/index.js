@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import HomePage from "@/pages/HomePage/HomePage.vue";
 import CheckPage from "@/pages/CheckPage/CheckPage.vue";
 import SchedulePage from "@/pages/SchedulePage/SchedulePage.vue";
-import PaymentSuccessfuledPage from "@/pages/PaymentPage/PaymentSuccessfulPage.vue";
+import PaymentPage from "@/pages/PaymentPage/PaymentPage.vue";
 import PaymentFailedPage from "@/pages/PaymentPage/PaymentFailedPage.vue";
 
 import test from "@/pages/testHome/testHome.vue";
@@ -16,8 +16,8 @@ const routes = [{
         path: "/Check",
         component: CheckPage
     }, {
-        path: "/PaymentSuccessful",
-        component: PaymentSuccessfuledPage
+        path: "/PaymentPage",
+        component: PaymentPage
     }, {
         path: "/PaymentFail",
         component: PaymentFailedPage

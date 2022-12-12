@@ -297,11 +297,17 @@ onMounted(() => {
             // console.log(ret.data)
             tableData.value = []
             for(var i=0;i<ret.data.flights.length;i++){
+                // var deptime = ret.data.flight[i].depTime
+
+                // var deptime_1 = deptime.slice(1,10)
+                // console.log(deptime_1)
+
                 let tempflight : flightDetailInfo = {
                     flight : ret.data.flights[i].flight,  // 机次
                     arrPlace : ret.data.flights[i].arrPlace,  // 到达地
                     depPlace : ret.data.flights[i].depPlace,  // 出发地
                     depTime : ret.data.flights[i].depTime,  // 起飞时间
+                    // depTime : deptime_1,  // 起飞时间
                     arrTime : ret.data.flights[i].arrTime,  // 到达时间
                     price : ret.data.flights[i].lowestPrice,  // 最低价格
                     seats : ret.data.flights[i].seatLeft,  // 剩余座位
