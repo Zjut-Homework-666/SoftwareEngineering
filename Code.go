@@ -16,6 +16,7 @@ import (
 )
 
 var ip = "121.5.157.39"
+var host = "127.0.0.1"
 var port = ":8089"
 
 type UserInfo struct {
@@ -59,12 +60,12 @@ type SeatDetailInfo struct {
 
 // 结构体的嵌套加载请使用gorm中的preload
 type OrderInfo struct {
+	OrderId     int        `gorm:"column:orderId;primary_key" json:"orderId"`
 	OrderTime   time.Time  `gorm:"column:orderTime" json:"orderTime"`
 	Price       int        `gorm:"column:price" json:"price"`
-	OrderId     int        `gorm:"column:orderId" json:"orderId"`
-	OrderStatus string     `gorm:"column:orderStatus" json:"orderStatus"`
-	UserInfo    UserInfo   `json:"userInfo"`
-	FlightSeat  FlightSeat `json:"flightSeat"`
+	OrderStatus string     `gorm:"column:orderstatus" json:"orderStatus"`
+	UserInfo    UserInfo   `gorm:"embedded" json:"userInfo"`
+	FlightSeat  FlightSeat `gorm:"embedded" json:"flightSeat"`
 }
 
 type ResponeInfo struct {
@@ -81,6 +82,11 @@ type ReserveReturn struct {
 	ResponeInfo ResponeInfo `json:"responeInfo"`
 	PayUrl      string      `json:"payUrl"`
 	CancelUrl   string      `json:"cancelUrl"`
+	OrderId     int         `json:"orderId"`
+}
+
+type ReserveStatusReturn struct {
+	ResponeInfo ResponeInfo `json:"responeInfo"`
 	FlightInfo  FlightInfo  `json:"flightInfo"`
 	OrderInfo   OrderInfo   `json:"orderInfo"`
 }
@@ -165,13 +171,17 @@ func main() {
 
 	//初始化一个管道和Map
 	orderChan := make(chan int, 1)
-	orderMap := make(map[int](context.CancelFunc))
+	orderCancelMap := make(map[int](context.CancelFunc))
+	orderCtxMap := make(map[int](context.Context))
+	orderUrlMap := make(map[int]string)
 	//一直查看管道内是否有数据，有的话将取消Map中对应ID的协程
 	go func() {
 		for {
 			id := <-orderChan
-			orderMap[id]()
-			delete(orderMap, id)
+			if value, ok := orderCancelMap[id]; ok {
+				value()
+				delete(orderCancelMap, id)
+			}
 		}
 	}()
 
@@ -185,69 +195,102 @@ func main() {
 
 	router.POST("/reserve", func(c *gin.Context) {
 		reserveInfo := ReserveInfo{}
-		c.BindJSON(&reserveInfo)
 		reserveReturn := ReserveReturn{}
-		reserveReturn.ResponeInfo.Code = 0
-		seatDetailInfo := SeatDetailInfo{}
+		orderInfo := OrderInfo{}
 		flightDetailInfo := FlightDetailInfo{}
-		// TODO:王瑞沣,难度⭐⭐⭐,接收预定信息,更新机次座位数据库与生成订单
-		db.Table("flight").Find(&reserveReturn.FlightInfo, FlightInfo{Flight: reserveInfo.FlightSeat.Flight})
-		db.Table("seat").Where("flight = ? AND seat = ?", reserveInfo.FlightSeat.Flight, reserveInfo.FlightSeat.Seat).Update("status", "已预定")
+		c.BindJSON(&reserveInfo)
+		reserveReturn.ResponeInfo.Code = 0
+		reserveReturn.ResponeInfo.Msg = "success"
 
-		reserveReturn.OrderInfo.FlightSeat = reserveInfo.FlightSeat
-		reserveReturn.OrderInfo.UserInfo = reserveInfo.UserInfo
-		Time := time.Now()
-		reserveReturn.OrderInfo.OrderTime = Time
-		reserveReturn.OrderInfo.OrderStatus = "未付款"
+		//更新座位数据库并获取价格
+		flight := reserveInfo.FlightSeat.Flight
+		seat := reserveInfo.FlightSeat.Seat
+		seatDetailInfo := SeatDetailInfo{Flight: flight, Seat: seat}
+		db.Table("seat").Where(seatDetailInfo).Update("status", "已预定")
+		db.Table("seat").Take(&seatDetailInfo, seatDetailInfo)
 
-		db.Table("seat").Where("flight = ? AND seat = ?", reserveInfo.FlightSeat.Flight, reserveInfo.FlightSeat.Seat).Find(&seatDetailInfo)
-		reserveReturn.OrderInfo.Price = seatDetailInfo.Price
-		db.Table("order").Create(&reserveReturn.OrderInfo)
+		//生成订单信息
+		orderInfo.Price = seatDetailInfo.Price
+		orderInfo.FlightSeat = reserveInfo.FlightSeat
+		orderInfo.UserInfo = reserveInfo.UserInfo
+		orderInfo.OrderTime = time.Now()
+		orderInfo.OrderStatus = "未付款"
 
-		db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: reserveInfo.FlightSeat.Flight})
+		//数据库创建订单信息
+		db.Table("order").Create(&orderInfo)
+
+		//修改机次状态
+		db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 		if flightDetailInfo.SeatLeft == 0 {
-			db.Table("flight").Where("flight = ?", flightDetailInfo.Flight).Update("status", "已满")
+			db.Table("flight").Where(flightDetailInfo).Update("status", "已满")
 		}
 
 		//部分参数初始化
-		orderId := 1
+		orderId := orderInfo.OrderId
+		fmt.Println(orderId)
 		id := strconv.Itoa(orderId)
 		checkCode := Md5(id)
-		str1 := "http://" + ip + port + "/pay?orderId=" + id
+		str1 := "http://" + host + port + "/pay?orderId=" + id
 		str2 := "&checkCode=" + checkCode + "&payStatus="
+
+		//生成一个十五分钟后自动取消的协程，并将其取消函数绑定至Map
+		d := time.Now().Add(time.Minute * 2)
+		ctx, cancel := context.WithDeadline(context.Background(), d)
+		orderCancelMap[orderId] = cancel
+		orderCtxMap[orderId] = ctx
+		orderUrlMap[orderId] = str1 + str2 + "1"
 
 		//返回预定信息
 		reserveReturn.ResponeInfo.Msg = "Ticket booked successfully, waiting for payment"
+		reserveReturn.OrderId = orderId
 		reserveReturn.PayUrl = str1 + str2 + "0"
 		reserveReturn.CancelUrl = str1 + str2 + "1"
 		c.JSON(http.StatusOK, reserveReturn)
 
-		//生成一个十五分钟后自动取消的协程，并将其取消函数绑定至Map
-		d := time.Now().Add(time.Minute * 15)
-		ctx, cancel := context.WithDeadline(context.Background(), d) //
-		orderMap[orderId] = cancel
-		defer cancel()
+	})
 
+	router.GET("/reserveStatus", func(c *gin.Context) {
+		orderId, _ := strconv.Atoi(c.Query("orderId"))
+
+		reserveStatusReturn := ReserveStatusReturn{}
+		ctx := orderCtxMap[orderId]
+		d := time.Now().Add(time.Minute * 1)
+		ctx1, cancel := context.WithDeadline(context.Background(), d)
+		defer cancel()
 		//等待协程取消
-		<-ctx.Done()
-		//因为超时导致的取消
-		if ctx.Err() == context.DeadlineExceeded {
-			resp, err := http.Get(str1 + str2 + "1")
-			if err != nil {
-				reserveReturn.ResponeInfo.Msg = err.Error()
-				reserveReturn.ResponeInfo.Code = 4
-			} else {
-				reserveReturn.ResponeInfo.Msg = "Order is cancelled after timeout."
-				reserveReturn.ResponeInfo.Code = 3
+		select {
+		case <-ctx1.Done():
+			reserveStatusReturn.ResponeInfo.Msg = "Payment not completed"
+			reserveStatusReturn.ResponeInfo.Code = 1
+			c.JSON(http.StatusOK, reserveStatusReturn)
+		case <-ctx.Done():
+			cancelUrl := orderUrlMap[orderId]
+			//因为超时导致的取消
+			if ctx.Err() == context.DeadlineExceeded {
+				resp, err := http.Get(cancelUrl)
+				if err != nil {
+					reserveStatusReturn.ResponeInfo.Msg = err.Error()
+					reserveStatusReturn.ResponeInfo.Code = 2
+				} else {
+					reserveStatusReturn.ResponeInfo.Msg = "Order is cancelled after timeout."
+					reserveStatusReturn.ResponeInfo.Code = 1
+				}
+				resp.Body.Close()
+			} else { //手动进行的取消，即付款成功或取消付款
+				reserveStatusReturn.ResponeInfo.Msg = "The order ends normally."
+				reserveStatusReturn.ResponeInfo.Code = 0
 			}
-			resp.Body.Close()
-		} else { //手动进行的取消，即付款成功或取消付款
-			reserveReturn.OrderInfo.OrderStatus = "已付款"
-			reserveReturn.ResponeInfo.Msg = "The order ends normally."
-			reserveReturn.ResponeInfo.Code = 2
+			//返回数据
+			delete(orderCtxMap, orderId)
+			delete(orderUrlMap, orderId)
+
+			reserveStatusReturn.OrderInfo.OrderId = orderId
+			db.Table("order").Take(&reserveStatusReturn.OrderInfo)
+			reserveStatusReturn.FlightInfo.Flight = reserveStatusReturn.OrderInfo.FlightSeat.Flight
+			db.Table("flight").Take(&reserveStatusReturn.FlightInfo)
+			c.JSON(http.StatusOK, reserveStatusReturn)
 		}
-		//返回数据
-		c.JSON(http.StatusOK, reserveReturn)
+
 	})
 
 	router.GET("/pay", func(c *gin.Context) {
@@ -261,23 +304,26 @@ func main() {
 
 		if Md5(id) == checkCode {
 			db.Table("order").Where("orderId = ?", id).Find(&orderInfo)
+			flight := orderInfo.FlightSeat.Flight
 			if payStatus == 0 { //付款成功
 				db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
-				db.Table("seat").Where("flight = ? AND seat = ?", orderInfo.FlightSeat.Flight, orderInfo.FlightSeat.Seat).Update("status", "已付款")
-				db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: orderInfo.FlightSeat.Flight})
-				if flightDetailInfo.SeatLeft == 0 {
-					db.Table("flight").Where("flight = ?", flightDetailInfo.Flight).Update("status", "已满")
-				}
+				db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
 			} else { //取消订单
-				db.Table("order").Where("orderId = ?", id).Delete(&orderInfo)
-				db.Table("seat").Where("flight = ? AND seat = ?", orderInfo.FlightSeat.Flight, orderInfo.FlightSeat.Seat).Update("status", "空")
+				db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
+				db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
+				db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: flight})
+				if flightDetailInfo.SeatLeft != 0 {
+					db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
+				}
 			}
+			// 向管道内放入完成的ID
+			orderChan <- orderId
 		}
-
-		// 通知Web网页端
-
-		// 向管道内放入完成的ID
-		orderChan <- orderId
+		if payStatus == 0 {
+			c.String(http.StatusOK, "付款成功")
+		} else {
+			c.String(http.StatusOK, "取消成功")
+		}
 	})
 
 	router.GET("/flights", func(c *gin.Context) {
