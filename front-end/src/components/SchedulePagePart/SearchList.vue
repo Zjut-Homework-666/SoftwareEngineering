@@ -88,9 +88,8 @@
         </el-table-column>
 
 
-        <el-table-column label="操作" width="150">
+        <el-table-column label="操作" width="100">
                 <el-button type="primary" size="small">预订</el-button>
-                <el-button size="small">详情</el-button>
         </el-table-column>
     </el-table>
 

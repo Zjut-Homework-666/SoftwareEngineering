@@ -14,37 +14,29 @@
 
         <el-row>
             <el-col :span="2">
-                <p class="formLabel">航班状态</p>
+                <p class="formLabel">航班始末</p>
             </el-col>
-            <el-col :span="5">
-                <el-form-item>
-                    <el-checkbox-group v-model="searchForm.status">
-                        <el-checkbox label="售票中" name="status" />
-                        <el-checkbox label="未开售" name="status" />
-                        <el-checkbox label="停飞" name="status" />
-                        <el-checkbox label="已满" name="status" />
-                    </el-checkbox-group>
+            <el-col :span="20">
+                <el-form-item id="destination">
+                    <el-input style="width: 200px" v-model="searchForm.departure" placeholder="出发地" />
+                    <p style="margin: auto 20px">飞往</p>
+                    <el-input style="width: 200px" v-model="searchForm.destination" placeholder="目的地" />
                 </el-form-item>
             </el-col>
         </el-row>
 
         <el-row>
             <el-col :span="2">
-                <p class="formLabel">航班始末</p>
+                <p class="formLabel">日期</p>
             </el-col>
-            <el-col :span="20">
-                <el-form-item id="destination">
-                    <el-select style="width: 200px" v-model="searchForm.departure" placeholder="出发地">
-                        <el-option label="Zone one" value="shanghai" />
-                        <el-option label="Zone two" value="beijing" />
-                    </el-select>
-                    <p style="margin: auto 20px">飞往</p>
-                    <el-select style="width: 200px" v-model="searchForm.destination" placeholder="目的地">
-                        <el-option label="Zone one" value="shanghai" />
-                        <el-option label="Zone two" value="beijing" />
-                    </el-select>
-                </el-form-item>
-            </el-col>
+            <div class="block">
+                <el-date-picker
+                        v-model="value1"
+                        type="date"
+                        placeholder="选择日期"
+                        style="width: 200px"
+                />
+            </div>
         </el-row>
 
         <el-row>
@@ -60,7 +52,7 @@
                     <p style="margin-left: 20px;">~</p>
                     <el-input v-model="searchForm.price[1]" style="margin-left: 20px; width: 100px; " class="w-50 m-2"/>
                     <p style="margin-left: 10px;">元</p>
-                    <el-button id="searchSubmitBtn" type="primary" @click="submitSearchForm">查调</el-button>
+                    <el-button id="searchSubmitBtn" type="primary" @click="submitSearchForm">查询</el-button>
                 </el-form-item>
             </el-col>
         </el-row>
@@ -69,19 +61,24 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+
+const value1 = ref('')
 
 const searchForm = reactive({
     flight: '',
     departure: '',
     destination: '',
-    status: [],
     price: [0, 1000],
 })
 
 const submitSearchForm = () => {
     console.log('submit!')
 }
+
+// const disabledDate = (time: Date) => {
+//     return time.getTime() > Date.now()
+// }
 </script>
 
 <style scoped>
@@ -111,6 +108,7 @@ const submitSearchForm = () => {
 #destination {
     display: flex;
     flex-flow: column;
+    margin-top: 4px;
 }
 
 #searchSubmitBtn {
