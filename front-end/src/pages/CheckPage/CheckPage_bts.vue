@@ -91,7 +91,7 @@
 .dia_form {
     position: absolute;
     top: 0;
-    bottom: 50;
+    bottom: 50px;
     left: 0;
     right: 0;
     margin: auto;
@@ -151,7 +151,7 @@ const user_Info = ref({
     username: '',
     idnum: '',
     phonenum: '',
-    email: '', 
+    email: '',
     ordernum:''
 })
 
@@ -188,7 +188,7 @@ const submitUserInfo = () => {// eslint-disable-line no-unused-vars
                 console.log(ret.data)
             })
         centerDialogVisible.value=true
-    } else 
+    } else
         InfoEmpty()
 }
 

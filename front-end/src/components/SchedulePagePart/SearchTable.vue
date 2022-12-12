@@ -65,47 +65,14 @@
     <el-divider style="margin-top: 5px"/>
 
     <div id="listArea">
-        <el-table ref="tableRef" row-key="date" :data="showPage" style="width: auto; height: 70%; margin: 0 auto" :key="Math.random()">
-            <el-table-column prop="flight" label="航班号" width="120"
-            />
-            <el-table-column prop="depPlace" label="出发" width="120" sortable column-key="depPlace"
-                    :filters="[
-        { text: '2016-05-01', value: '2016-05-01' },
-        { text: '2016-05-02', value: '2016-05-02' },
-        { text: '2016-05-03', value: '2016-05-03' },
-        { text: '2016-05-04', value: '2016-05-04' },
-      ]"
-                    :filter-method="filterHandler"
-            />
-            <el-table-column prop="arrPlace" label="到达" width="120" sortable column-key="depPlace"
-                    :filters="[
-        { text: '2016-05-01', value: '2016-05-01' },
-        { text: '2016-05-02', value: '2016-05-02' },
-        { text: '2016-05-03', value: '2016-05-03' },
-        { text: '2016-05-04', value: '2016-05-04' },
-      ]"
-                    :filter-method="filterHandler"
-            />
-            <el-table-column prop="depTime" label="起飞时间" width="180" sortable column-key="depPlace"
-                    :filters="[
-        { text: '2016-05-01', value: '2016-05-01' },
-        { text: '2016-05-02', value: '2016-05-02' },
-        { text: '2016-05-03', value: '2016-05-03' },
-        { text: '2016-05-04', value: '2016-05-04' },
-      ]"
-                    :filter-method="filterHandler"
-            />
-            <el-table-column prop="arrTime" label="到达时间" width="180" sortable column-key="depPlace"
-                    :filters="[
-        { text: '2016-05-01', value: '2016-05-01' },
-        { text: '2016-05-02', value: '2016-05-02' },
-        { text: '2016-05-03', value: '2016-05-03' },
-        { text: '2016-05-04', value: '2016-05-04' },
-      ]"
-                    :filter-method="filterHandler"
-            />
-            <el-table-column prop="price" label="最低价格" width="120" sortable/>
-            <el-table-column prop="seats" label="剩余座位" width="120" />
+        <el-table ref="tableRef" row-key="date" :data="showPage" style="width: auto; height: 70%; margin: 0 auto" :key="Math.random()" @sort-change="sortChange">
+            <el-table-column prop="flight" label="航班号" width="120" sortable='custom'/>
+            <el-table-column prop="depPlace" label="出发" width="120" column-key="depPlace"/>
+            <el-table-column prop="arrPlace" label="到达" width="120" column-key="depPlace"/>
+            <el-table-column prop="depTime" label="起飞时间" width="180" column-key="depPlace" sortable='custom'/>
+            <el-table-column prop="arrTime" label="到达时间" width="180" column-key="depPlace" sortable='custom'/>
+            <el-table-column prop="price" label="最低价格" width="120" sortable='custom'/>
+            <el-table-column prop="seats" label="剩余座位" width="120" sortable='custom'/>
             <el-table-column prop="status" label="航班状态" width="100"
                     :filters="[
         { text: '售票中', value: '售票中' },
@@ -172,7 +139,7 @@
 import {ref, reactive, getCurrentInstance, onMounted} from 'vue'
 // import Qs from 'qs'
 import axios from 'axios';
-import { ElMessageBox, ElTable, type TableColumnCtx } from 'element-plus'
+import { ElMessageBox, ElTable} from 'element-plus'
 import * as echarts from 'echarts';
 
 interface flightDetailInfo {  // 机次信息
@@ -186,19 +153,19 @@ interface flightDetailInfo {  // 机次信息
     status: string  // 状态
 }
 
+// 查询表单
 const searchForm = reactive({
     flight: '',         // 航班
     departure: '',      // 出发地
     destination: '',    // 目的地
-    status: [],         // 状态
     price: [0, 1000],   // 价格区间
     date:''             // 日期
 })
+
 const proxy :any = getCurrentInstance().appContext.config.globalProperties
 
 let flightSeat = reactive<any>({});
 const chartDom = ref();
-
 const tableRef = ref<InstanceType<typeof ElTable>>()
 const currentPage = ref(4)
 const pageSize = ref(5)
@@ -207,110 +174,61 @@ const background = ref(true)
 const disabled = ref(false)
 const tableData = ref([
     {
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-12 10:00',
-        arrTime: '2022-10-12 12:00',
-        price: 500,
-        seats: 50,
-        status:  '售票中',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-12 10:00',
-        arrTime: '2022-10-12 12:00',
-        price: 500,
-        seats: 50,
-        status:  '未开售',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-12 10:00',
-        arrTime: '2022-10-12 12:00',
-        price: 500,
-        seats: 50,
-        status:  '停飞',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-12 10:00',
-        arrTime: '2022-10-12 12:00',
-        price: 500,
-        seats: 50,
-        status:  '已满',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-12 10:00',
-        arrTime: '2022-10-12 12:00',
-        price: 500,
-        seats: 50,
-        status:  '已满',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-13 10:00',
-        arrTime: '2022-10-13 12:00',
-        price: 500,
-        seats: 50,
-        status:  '已满',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-14 10:00',
-        arrTime: '2022-10-14 12:00',
-        price: 500,
-        seats: 50,
-        status:  '已满',
-    },{
-        flight: 'B-1234',
-        depPlace: '北京',
-        arrPlace: '杭州',
-        depTime: '2022-10-15 10:00',
-        arrTime: '2022-10-15 12:00',
-        price: 500,
-        seats: 50,
-        status:  '已满',
+        flight: '',
+        depPlace: '',
+        arrPlace: '',
+        depTime: '',
+        arrTime: '',
+        price: 0,
+        seats: 0,
+        status:  '',
     }])
 const flag = ref(0);
-
-const tagCtrl = (value: string) => {
-    if (value == '售票中') return 'success';
-    else if (value == '未开售') return 'warning';
-    else if (value == '停飞') return 'info';
-    else return 'danger';
-}
-
-const filterHandler = (
-    value: string,
-    row: flightDetailInfo,
-    column: TableColumnCtx<flightDetailInfo>
-) => {
-    const property = column['property']
-    return row[property] === value
-}
-
-// 显示数据
-// let showPage: flightDetailInfo[] = tableData.value.slice(0, pageSize.value);
+const dialogVisible = ref(false)
 let showPage = ref([])
 
+onMounted(() => {
+    // 页面刷新时 默认请求空条件查询
+    axios.get(proxy.$url+proxy.$BackendPort+"/flights", {
+        params: {
+            flight:'',        // 直接指定航班
+            depPlace:'',    // 出发地（关键词匹配）
+            arrPlace:'',   // 到达地（关键词匹配）
+            minPrice:0,    // 选择的最低价格
+            maxPrice:1000,    // 选择的最高价格   不能不填！！
+            date:'',            // 选择的时间
+        }
+    }).then(function (ret) {
+        // console.log(ret.data)
+        tableData.value = []
+        for(var i=0;i<ret.data.flights.length;i++){
+            let tempflight : flightDetailInfo = {
+                flight : ret.data.flights[i].flight,  // 机次
+                arrPlace : ret.data.flights[i].arrPlace,  // 到达地
+                depPlace : ret.data.flights[i].depPlace,  // 出发地
+                depTime : ret.data.flights[i].depTime,  // 起飞时间
+                arrTime : ret.data.flights[i].arrTime,  // 到达时间
+                price : ret.data.flights[i].lowestPrice,  // 最低价格
+                seats : ret.data.flights[i].seatLeft,  // 剩余座位
+                status : ret.data.flights[i].status  // 状态
+            }
+            tableData.value.push(tempflight)
+        }
+        showPage.value = tableData.value.slice(0, pageSize.value);
+    });
+})
+
+// 显示数据
 // 每页条数控制
 const handleSizeChange = () => {
     showPage.value = tableData.value.slice(0, pageSize.value);
 }
-
 // 换页控制
 const handleCurrentChange = () => {
     showPage.value = tableData.value.slice((currentPage.value-1)*pageSize.value, currentPage.value*pageSize.value);
 }
 
+// 显示预定飞机座位图形
 const showChart = () => {
     setTimeout(()=>{
 
@@ -412,38 +330,6 @@ const showChart = () => {
     },100)
 }
 
-
-onMounted(() => {
-    // 页面刷新时 默认请求空条件查询
-    axios.get(proxy.$url+proxy.$BackendPort+"/flights", {
-        params: {
-            flight:'',        // 直接指定航班
-            depPlace:'',    // 出发地（关键词匹配）
-            arrPlace:'',   // 到达地（关键词匹配）
-            minPrice:0,    // 选择的最低价格
-            maxPrice:1000,    // 选择的最高价格   不能不填！！
-            date:'',            // 选择的时间
-        }
-    }).then(function (ret) {
-        // console.log(ret.data)
-        tableData.value = []
-        for(var i=0;i<ret.data.flights.length;i++){
-            let tempflight : flightDetailInfo = {
-                flight : ret.data.flights[i].flight,  // 机次
-                arrPlace : ret.data.flights[i].arrPlace,  // 到达地
-                depPlace : ret.data.flights[i].depPlace,  // 出发地
-                depTime : ret.data.flights[i].depTime,  // 起飞时间
-                arrTime : ret.data.flights[i].arrTime,  // 到达时间
-                price : ret.data.flights[i].lowestPrice,  // 最低价格
-                seats : ret.data.flights[i].seatLeft,  // 剩余座位
-                status : ret.data.flights[i].status  // 状态
-            }
-            tableData.value.push(tempflight)
-        }
-        showPage.value = tableData.value.slice(0, pageSize.value);
-    });
-})
-
 // 查询按钮
 const submitSearchForm = () => {
     console.log('submit!')
@@ -488,7 +374,6 @@ const submitSearchForm = () => {
 }
 
 // 预定操作
-const dialogVisible = ref(false)
 
 const handleClose = (done: () => void) => {
     ElMessageBox.confirm('确认关闭?')
@@ -502,6 +387,151 @@ const handleClose = (done: () => void) => {
 
 const filterTag = () => {
 
+}
+
+// 表格排序、过滤、标签过滤
+
+/**
+ * @method
+ * @param column
+ * @subparam prop: 'xxxx', // el-table-column中的prop
+ * @subparam order: 'xxxx', // 'ascending' or 'descending'
+ */
+const sortChange = (column) => {
+    currentPage.value = 1
+    if (column.prop === 'flight') {
+        if (column.order === 'descending') {
+            tableData.value = tableData.value.sort(flightDescSort)
+        } else if (column.order === 'ascending') {
+            tableData.value = tableData.value.sort(flightAscSort)
+        }
+    } else if (column.prop === 'depTime') {
+        if (column.order === 'descending') {
+            tableData.value = tableData.value.sort(depTimeDescSort)
+        } else if (column.order === 'ascending') {
+            tableData.value = tableData.value.sort(depTimeAscSort)
+        }
+    } else if (column.prop === 'arrTime') {
+        if (column.order === 'descending') {
+            tableData.value = tableData.value.sort(arrTimeDescSort)
+        } else if (column.order === 'ascending') {
+            tableData.value = tableData.value.sort(arrTimeAscSort)
+        }
+    } else if (column.prop === 'price') {
+        if (column.order === 'descending') {
+            tableData.value = tableData.value.sort(priceDescSort)
+        } else if (column.order === 'ascending') {
+            tableData.value = tableData.value.sort(priceAscSort)
+        }
+    } else if (column.prop === 'seats') {
+        if (column.order === 'descending') {
+            tableData.value = tableData.value.sort(seatsDescSort)
+        } else if (column.order === 'ascending') {
+            tableData.value = tableData.value.sort(seatsAscSort)
+        }
+    }
+    showPage.value = tableData.value.slice(0, pageSize.value)
+}
+
+// 排序函数
+const flightDescSort = (a, b) => {
+    if (a.flight > b.flight) {
+        return -1
+    } else if (a.flight < b.flight) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const flightAscSort = (a, b) => {
+    if (a.flight < b.flight) {
+        return -1
+    } else if (a.flight > b.flight) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const depTimeDescSort = (a, b) => {
+    console.log(a)
+    if (a.arrTime > b.arrTime) {
+        return -1
+    } else if (a.arrTime < b.arrTime) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const depTimeAscSort = (a, b) => {
+    if (a.arrTime < b.arrTime) {
+        return -1
+    } else if (a.arrTime > b.arrTime) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const arrTimeDescSort = (a, b) => {
+    if (a.arrTime > b.arrTime) {
+        return -1
+    } else if (a.arrTime < b.arrTime) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const arrTimeAscSort = (a, b) => {
+    if (a.arrTime < b.arrTime) {
+        return -1
+    } else if (a.arrTime > b.arrTime) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const seatsDescSort = (a, b) => {
+    if (a.seats > b.seats) {
+        return -1
+    } else if (a.seats < b.seats) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const seatsAscSort = (a, b) => {
+    if (a.seats < b.seats) {
+        return -1
+    } else if (a.seats > b.seats) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const priceDescSort = (a, b) => {
+    if (a.price > b.price) {
+        return -1
+    } else if (a.price < b.price) {
+        return 1
+    } else {
+        return 0
+    }
+}
+const priceAscSort = (a, b) => {
+    if (a.price < b.price) {
+        return -1
+    } else if (a.price > b.price) {
+        return 1
+    } else {
+        return 0
+    }
+}
+
+// 标签
+const tagCtrl = (value: string) => {
+    if (value == '售票中') return 'success';
+    else if (value == '未开售') return 'warning';
+    else if (value == '停飞') return 'info';
+    else return 'danger';
 }
 </script>
 
