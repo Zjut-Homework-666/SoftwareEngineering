@@ -8,6 +8,8 @@ import axios from 'axios'
 // import VueAxios from 'vue-axios'
 // import './plugins/axios'
 import App from './App.vue'
+import store from './store/index.js'
+
 const app = createApp(App)
 
 // 全局方法挂载全局变量
@@ -20,5 +22,9 @@ app.use(router)
 app.use(ElementPlus)
 app.config.globalProperties.$echarts = echarts
 app.config.globalProperties.$axios = axios
+
+
+// 将 store 实例作为插件安装
+app.use(store)
 
 app.mount('#app')

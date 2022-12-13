@@ -126,7 +126,7 @@
         <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
             取消
         </el-button>
-        <el-button type="primary" @click="dialogVisible = false" style="width: 100px;height: 40px;">
+        <el-button type="primary" @click="SchheduleButton" style="width: 100px;height: 40px;">
             确定
         </el-button>
       </span>
@@ -141,6 +141,8 @@ import {ref, reactive, getCurrentInstance, onMounted} from 'vue'
 import axios from 'axios';
 import { ElMessageBox, ElTable} from 'element-plus'
 import * as echarts from 'echarts';
+// import { useStore } from 'vuex' // 引入useStore 方法
+// import bus from '../../utils'
 
 interface flightDetailInfo {  // 机次信息
     flight: string  // 机次
@@ -243,6 +245,9 @@ const showChart = () => {
         axios.get('./flight-seats.svg').then((ret) => {
             // @ts-ignore
             echarts.registerMap('flight-seats', { svg: ret.data });
+
+            //根据选择航班请求座位信息
+            axios.get(proxy.$url+proxy.$BackendPort)
 
             const takenSeatNames = ['26E', '26D', '26C', '25D', '23C', '21A', '20F'];
 
@@ -533,6 +538,46 @@ const tagCtrl = (value: string) => {
     else if (value == '停飞') return 'info';
     else return 'danger';
 }
+
+// const store = useStore()
+
+
+const SchheduleButton = () =>{
+    let config = {
+        headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
+    };
+    let userInfo = {
+        name : '',
+        sex : '',
+        phone : 1,
+        mail : '',
+        id : ''
+    }
+    let flightSeat = {
+        flight : '',
+        seat : 1
+    }
+    let data = {
+        userInfo,
+        flightSeat
+    }
+
+    axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data,config)
+        .then(function (ret) {
+            console.log(ret.data)
+            let payURL = ret.data.payUrl;
+            let cancelURL = ret.data.cancelUrl;
+            let orderId = ret.data.orderId;
+            console.log(payURL)
+            console.log(cancelURL)
+            console.log(orderId)
+            // bus.emit('GetPaymentInfo',)
+
+        })
+
+    dialogVisible.value = false;
+}
+
 </script>
 
 <style scoped>

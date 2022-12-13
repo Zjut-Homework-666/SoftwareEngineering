@@ -143,9 +143,25 @@ const proxy :any = getCurrentInstance().appContext.config.globalProperties
 
 let QRCodeURL = proxy.$url + proxy.$BackendPort;
 
+let payURL = ref('');
+let cancelURL = ref('');
+let orderId = ref('');
+
 onMounted(()=>{
     Time() //调用定时器
+
+    // while(true){
+    //     // break;
+    // }
 })
+
+// eslint-disable-next-line no-unused-vars
+const GetPaymentInfo = (pay,cancel,orderID) =>{
+    payURL.value = pay;
+    cancelURL.value = cancel;
+    orderId.value = orderID;
+}
+
 const Time = () =>{
     setInterval(() => {
         seconds -= 1
@@ -170,12 +186,12 @@ const countDown = () => {
 // }
 
 const Cancel = () => {
-    console.log("HomePage")
+    // console.log("HomePage")
     router.push('/HomePage')
 }
 
 const Return = () => {
-    console.log("HomePage")
+    // console.log("HomePage")
     router.push('/HomePage')
     ElMessageBox.alert('支付超时，返回主界面', '提示', {
         confirmButtonText: 'OK',
