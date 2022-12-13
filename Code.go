@@ -312,6 +312,7 @@ func main() {
 		if Md5(id) == checkCode {
 			db.Table("order").Where("orderId = ?", id).Find(&orderInfo)
 			flight := orderInfo.FlightSeat.Flight
+
 			if payStatus == 0 { //付款成功
 				db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
 				db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
