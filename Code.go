@@ -310,26 +310,29 @@ func main() {
 		id := strconv.Itoa(orderId)
 
 		if Md5(id) == checkCode {
-			db.Table("order").Where("orderId = ?", id).Find(&orderInfo)
-			flight := orderInfo.FlightSeat.Flight
-			if payStatus == 0 { //付款成功
-				db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
-				db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
-			} else { //取消订单
-				db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
-				db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
-				db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: flight})
-				if flightDetailInfo.SeatLeft != 0 {
-					db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
+			db.Table("order").Where("orderId = ?", id).Take(&orderInfo)
+			if orderInfo.OrderStatus == "未付款" {
+				flight := orderInfo.FlightSeat.Flight
+				if payStatus == 0 { //付款成功
+					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
+					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
+					c.String(http.StatusOK, "付款成功")
+				} else { //取消订单
+					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
+					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
+					db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: flight})
+					if flightDetailInfo.SeatLeft != 0 {
+						db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
+					}
+					c.String(http.StatusOK, "取消成功")
 				}
+				// 向管道内放入完成的ID
+				orderChan <- orderId
+			} else if orderInfo.OrderStatus == "已付款" {
+				c.String(http.StatusOK, "订单已成功付款")
+			} else if orderInfo.OrderStatus == "已取消" {
+				c.String(http.StatusOK, "订单已取消")
 			}
-			// 向管道内放入完成的ID
-			orderChan <- orderId
-		}
-		if payStatus == 0 {
-			c.String(http.StatusOK, "付款成功")
-		} else {
-			c.String(http.StatusOK, "取消成功")
 		}
 	})
 
