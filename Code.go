@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"gopkg.in/gomail.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
@@ -29,7 +31,7 @@ type UserInfo struct {
 
 type FlightSeat struct {
 	Flight string `gorm:"column:flight" json:"flight"`
-	Seat   int    `gorm:"column:seat" json:"seat"`
+	Seat   string `gorm:"column:seat" json:"seat"`
 }
 
 type FlightInfo struct {
@@ -53,7 +55,7 @@ type FlightDetailInfo struct {
 
 type SeatDetailInfo struct {
 	Flight string `gorm:"column:flight" json:"flight"`
-	Seat   int    `gorm:"column:seat" json:"seat"`
+	Seat   string `gorm:"column:seat" json:"seat"`
 	Price  int    `gorm:"column:price" json:"price"`
 	Status string `gorm:"column:status" json:"status"`
 }
@@ -181,6 +183,47 @@ func main() {
 			if value, ok := orderCancelMap[id]; ok {
 				value()
 				delete(orderCancelMap, id)
+			}
+		}
+	}()
+
+	ticker := time.NewTicker(10 * time.Second)
+	flightList := [100]FlightInfo{}
+	orderList := [100]OrderInfo{}
+	message := `
+    <p>尊敬的%s旅客,您好</p>
+	<p style="text-indent:2em">您购买的由%s飞往%s的%s航班即将起飞。</p> 
+	<p style="text-indent:2em">请于航班起飞前60分钟到机场进行核验</p>
+	`
+
+	mail := gomail.NewMessage()
+	mail.SetHeader("From", "机票预订系统")
+	mail.SetHeader("Subject", "机票核验通知")
+	d := gomail.NewDialer(
+		"smtp.qq.com",
+		25,
+		"548375790@qq.com",
+		"kexnxupxompwbbae",
+	)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	go func() {
+		for range ticker.C {
+			fmt.Println("az")
+			startTime := time.Now()
+			endTime := time.Now().AddDate(0, 0, 1)
+			db.Table("flight").Where("arrTime > ? AND arrTime < ?", startTime, endTime).Find(&flightList)
+			for _, flight := range flightList {
+				db.Table("order").Where("orderStatus = ? AND flight = ?", "已付款", flight.Flight).Find(&orderList)
+				for _, order := range orderList {
+					db.Table("order").Where("orderId = ?", order.OrderId).Update("orderStatus", "已通知")
+					fmt.Println(order)
+					mail.SetHeader("To", order.UserInfo.Mail)
+					mail.SetBody("text/html", fmt.Sprintf(message, order.UserInfo.Name, flight.ArrPlace, flight.DepPlace))
+					if err := d.DialAndSend(mail); err != nil {
+						panic(err)
+					}
+				}
 			}
 		}
 	}()
