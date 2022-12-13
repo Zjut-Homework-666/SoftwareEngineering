@@ -2,8 +2,11 @@
     <div class="bt_ct">
         <el-form class="bt_form" label-width="70px">
             <p class="title">请扫描二维码付款</p>
-            <img id="QRCode" src="../../assets/QRCode.jpg" alt="" width=300 height=300>
-            <div class="title">剩余支付时间：{{count}}</div>
+<!--            <img id="QRCode" src="../../assets/QRCode.jpg" alt="" width=300 height=300>-->
+<!--            <vue-qr text="Hello world!" :callback="test" qid="testid"></vue-qr>-->
+            <vue-qr background-color="#f8f6f6" :text='QRCodeURL' :size="300"></vue-qr>
+            <div class="title">剩余支付时间：{{count.value}}</div>
+
             <el-form-item class="bt_row" label-width="0">
                 <el-button class="bt" type="primary" @click="Cancel">
                     <span>取消</span>
@@ -32,7 +35,7 @@
                 <template #footer>
                     <span class="dialog-footer">
                         <el-button type="primary" @click="centerDialogVisible = false">
-                            确认
+                            Confirm
                         </el-button>
                     </span>
                 </template>
@@ -123,48 +126,72 @@
 }
 </style>
 
-<script >
+<script lang="ts" setup>
 // import axios from 'axios';
-import router from '../../router'
+import router from '../../router/index.js'
 // import { ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
+// import QrcodeVue from 'qrcode.vue'
+import {getCurrentInstance, onMounted, ref} from "vue";
+import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
-export default {
-    data() {
-        return {
-            count: '', //倒计时
-            seconds: 900, // 10天的秒数
-        }
-    },
-    mounted() {
-        this.Time() //调用定时器
-    },
-    methods: {
-        //分 秒 格式化函数
-        countDown() {
-            let m = parseInt(this.seconds / 60 % 60);
-            m = m < 10 ? "0" + m : m
-            let s = parseInt(this.seconds % 60);
-            s = s < 10 ? "0" + s : s
-            this.count = m + '分' + s + '秒'
-        },
-        //定时器没过1秒参数减1
-        Time() {
-            setInterval(() => {
-                this.seconds -= 1
-                this.countDown()
-                if (this.seconds == 0) 
-                    Return()
-            }, 1000)
-        },
-        Cancel() {
-            console.log("HomePage")
-            router.push('/HomePage')
-        }
-    }
+
+let count = ref('');  //倒计时
+let seconds= 900; // 10天的秒数
+
+const proxy :any = getCurrentInstance().appContext.config.globalProperties
+
+let QRCodeURL = proxy.$url + proxy.$BackendPort;
+
+let payURL = ref('');
+let cancelURL = ref('');
+let orderId = ref('');
+
+onMounted(()=>{
+    Time() //调用定时器
+
+    // while(true){
+    //     // break;
+    // }
+})
+
+// eslint-disable-next-line no-unused-vars
+const GetPaymentInfo = (pay,cancel,orderID) =>{
+    payURL.value = pay;
+    cancelURL.value = cancel;
+    orderId.value = orderID;
 }
+
+const Time = () =>{
+    setInterval(() => {
+        seconds -= 1
+        countDown()
+        if (seconds == 0)
+            Return()
+    }, 1000)
+}
+const countDown = () => {
+    let m = (seconds/60)%60;
+    // m = m < 10 ? 0 + m : m
+    let s = seconds % 60;
+    // s = s < 10 ? "0" + s : s
+    count.value = m.toString() + '分' + s.toString() + '秒'
+    // count = '14:59'
+}
+
+
+// const url = 'http://localhost:8080'
+// const test = (dataUrl,id) =>{
+//     console.log(url, id)
+// }
+
+const Cancel = () => {
+    // console.log("HomePage")
+    router.push('/HomePage')
+}
+
 const Return = () => {
-    console.log("HomePage")
+    // console.log("HomePage")
     router.push('/HomePage')
     ElMessageBox.alert('支付超时，返回主界面', '提示', {
         confirmButtonText: 'OK',

@@ -5,7 +5,7 @@ import SchedulePage from "@/pages/SchedulePage/SchedulePage.vue";
 import PaymentPage from "@/pages/PaymentPage/PaymentPage.vue";
 import PaymentFailedPage from "@/pages/PaymentPage/PaymentFailedPage.vue";
 
-import test from "@/pages/testHome/testHome.vue";
+import testQRCode from "@/pages/testHome/testQRCode.vue";
 const routes = [{
         path: "/",
         component: HomePage
@@ -22,8 +22,8 @@ const routes = [{
         path: "/PaymentFail",
         component: PaymentFailedPage
     },{
-        path: "/testHome",
-        component: test
+        path: "/test",
+        component: testQRCode
     },{
         path: "/:pathMatch(.*)",
         redirect: "/"
