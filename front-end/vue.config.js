@@ -3,6 +3,7 @@ module.exports = defineConfig({
   transpileDependencies: true
 })
 module.exports = { configureWebpack: {
+  devtool: 'source-map',
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".json"],
      alias: {}

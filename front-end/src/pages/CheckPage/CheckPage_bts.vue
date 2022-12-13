@@ -22,28 +22,22 @@
                     <span>提交</span>
                 </el-button>
             </el-form-item>
-            <el-dialog v-model="centerDialogVisible" title="核验成功" width="30%" align-center>
+            <el-dialog v-model="centerDialogVisible" title="核验成功" width="45%" align-center>
                 <div class="dia">
-                    <el-form class="dia_form"  label-position="top">
-                        <el-form-item class="dia_row" label-width="75" label="姓名:">
-                           XXXXXX
-                        </el-form-item>
-                        <el-form-item class="dia_row" label-width="75" label="起飞地-终点站:">
-                            XXXXXX
-                        </el-form-item>
-                        <el-form-item class="dia_row" label-width="75" label="起飞时间:">
-                            XXXXXX
-                        </el-form-item>
-                        <el-form-item class="dia_row" label-width="75" label="身份证号:">
-                            XXXXXXXXXXXXXXXXXX
-                        </el-form-item>
-                        <el-form-item class="dia_row" label-width="75" label="电话号码:">
-                           XXXXXX
-                        </el-form-item>
-                        <el-form-item class="dia_row" label-width="75" label="订单编号:">
-                            XXXXXX
-                        </el-form-item>
-                    </el-form>
+                    <el-container>
+                        <el-header class="header">AIR TICKET</el-header>
+                        <el-main>
+                            <el-descriptions title="BOARDING PASS" direction="vertical" >
+                                <el-descriptions-item label="PASSANGER NAME">MURPHY</el-descriptions-item>
+                                <el-descriptions-item label="DATE">2022.12.13</el-descriptions-item>
+                                <el-descriptions-item label="BOARING TIME">10:30</el-descriptions-item>
+                                <el-descriptions-item label="FLIGHT NO.">LJ6581</el-descriptions-item>
+                                <el-descriptions-item label="FROM/TO">杭州/北京</el-descriptions-item>
+                                <el-descriptions-item label="SEAT">21B</el-descriptions-item>
+                            </el-descriptions>
+                        </el-main>
+                        <el-footer class="footer">GATE CLOSES 30 MINUTES BEFORE DEPARTURE</el-footer>
+                    </el-container>
                 </div>
                 <template #footer>
                     <span class="dialog-footer">
@@ -61,8 +55,28 @@
 .bt_ct {
     border-radius: 15px;
 }
+.header{
+    width: 100%;
+    height: 0%;
+    padding-right: 600px;
+    text-align: center;
+    color:aliceblue;
+    background-color: #1076a4;
+    font-size: 30px;
+    /* font-weight: bold */
+}
+.footer{
+    width: 100%;
+    height: 0%;
+    padding-left: 500px;
+    text-align: center;
+    color:aliceblue;
+    background-color: #1076a4;
+    font-size: 10px;
+    /* font-weight: bold */
+}
 .dia {
-    height: 450px;
+    height: 265px;
     overflow: auto;
 }
 .dialog-footer{
@@ -88,19 +102,6 @@
     width: 30%;
     height: 70%;
 }
-.dia_form {
-    position: absolute;
-    top: 0;
-    bottom: 50px;
-    left: 0;
-    right: 0;
-    margin: auto;
-    width: 95%;
-    height: 90%;
-
-}
-
-
 .bt_row {
     height: 10%;
     width: auto;
@@ -110,15 +111,6 @@
     text-align: center;
 
 }
-.dia_row {
-    height: 0%;
-    width: 30%;
-    margin-top: 14%;
-    margin-left: 30%;
-    justify-content: center;
-    text-align: center;
-}
-
 .bt {
     width: 80%;
     height: 120%;
