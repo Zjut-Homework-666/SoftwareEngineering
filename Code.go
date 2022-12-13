@@ -187,7 +187,7 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(10 * time.Minute)
 	flightList := [100]FlightInfo{}
 	orderList := [100]OrderInfo{}
 	message := `
