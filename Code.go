@@ -277,10 +277,10 @@ func main() {
 				resp, err := http.Get(cancelUrl)
 				if err != nil {
 					reserveStatusReturn.ResponeInfo.Msg = err.Error()
-					reserveStatusReturn.ResponeInfo.Code = 3
+					reserveStatusReturn.ResponeInfo.Code = 2
 				} else {
 					reserveStatusReturn.ResponeInfo.Msg = "Order is cancelled after timeout."
-					reserveStatusReturn.ResponeInfo.Code = 2
+					reserveStatusReturn.ResponeInfo.Code = 1
 				}
 				resp.Body.Close()
 			} else { //手动进行的取消，即付款成功或取消付款
