@@ -398,7 +398,7 @@ func main() {
 		flightReturn.ResponeInfo.Msg = "Success"
 		flight := c.Query("flight")
 		if flight != "" {
-			result := db.Table("flightInfo").Find(&flightReturn.Flights, FlightDetailInfo{Flight: flight})
+			result := db.Table("flightinfo").Find(&flightReturn.Flights, FlightDetailInfo{Flight: flight})
 			if result.Error != nil {
 				flightReturn.ResponeInfo.Msg = result.Error.Error()
 				flightReturn.ResponeInfo.Code = 1
@@ -413,7 +413,7 @@ func main() {
 		minPrice, _ := strconv.Atoi(c.Query("minPrice"))
 		maxPrice, _ := strconv.Atoi(c.Query("maxPrice"))
 		str := "arrPlace LIKE ? AND depPlace LIKE ? AND arrTime LIKE ? AND lowestPrice > ? AND lowestPrice < ?"
-		result := db.Table("flightInfo").Where(str, arrPlace, depPlace, date, minPrice, maxPrice).Find(&flightReturn.Flights)
+		result := db.Table("flightinfo").Where(str, arrPlace, depPlace, date, minPrice, maxPrice).Find(&flightReturn.Flights)
 		if result.Error != nil {
 			flightReturn.ResponeInfo.Msg = result.Error.Error()
 			flightReturn.ResponeInfo.Code = 1
