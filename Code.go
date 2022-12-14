@@ -430,10 +430,59 @@ func main() {
 		checkInfo := CheckInfo{}
 		c.BindJSON(&checkInfo)
 		// TODO:杨子博,难度⭐⭐
+		checkReturn := CheckReturn{}
+		checkReturn.ResponeInfo.Msg = "Success"
+		checkReturn.ResponeInfo.Code = 0
+
+		name := checkInfo.UserInfo.Name
+		phone := checkInfo.UserInfo.Phone
+		id := checkInfo.UserInfo.Id
+
+		/**
+		*SELECT
+		*	*
+		*FROM
+		*	( `order` JOIN flight ON flight.flight = `order`.flight )
+		*WHERE
+		*	`order`.`name` = 'qwer'
+		*	AND phone = 12341234
+		*	AND id = '12342345'
+		*ORDER BY depTime
+		 */
+		err := db.Raw("SELECT*FROM( `order` JOIN flight ON flight.flight = `order`.flight ) WHERE`order`.`name` = ? AND phone = ? AND id = ? ORDER BY depTime", name, phone, id).First(&checkReturn.FlightSeat)
+
+		if err.Error != nil {
+			//核验失败
+			checkReturn.ResponeInfo.Code = 1
+			checkReturn.ResponeInfo.Msg = "无匹配用户！"
+			c.JSON(http.StatusOK, checkReturn)
+		}
+
+		db.Table("flight").Where("flight = ?", checkReturn.FlightSeat.Flight).Find(&checkReturn.FlightInfo)
+		checkReturn.Name = checkInfo.UserInfo.Name
+
+		c.JSON(http.StatusOK, checkReturn)
+
 	})
 
 	router.GET("/seats", func(c *gin.Context) {
 		// TODO:杨子博,难度⭐
+		seatReturn := SeatReturn{}
+		seatReturn.ResponeInfo.Msg = "Success"
+		seatReturn.ResponeInfo.Code = 0
+
+		flight := c.Query("flight")
+
+		//var seatDetailInfo SeatDetailInfo
+		err := db.Table("seat").Where("flight = ?", flight).Find(&seatReturn.Seats)
+		if err.Error != nil {
+			// 数据库检索错误返回
+			seatReturn.ResponeInfo.Msg = err.Error.Error()
+			seatReturn.ResponeInfo.Code = 1
+		}
+		fmt.Print(seatReturn.Seats)
+
+		c.JSON(http.StatusOK, seatReturn)
 	})
 
 	router.Run(port)
