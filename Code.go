@@ -249,11 +249,12 @@ func main() {
 		db.Table("seat").Take(&seatDetailInfo, seatDetailInfo)
 
 		if seatDetailInfo.Status == "空" { //座位状态为空则进行预定
+			result := [10]*gorm.DB{}
 			reserveReturn.ResponeInfo.Code = 0
 			reserveReturn.ResponeInfo.Msg = "success"
 
 			//更新座位数据库并获取价格
-			db.Table("seat").Where(seatDetailInfo).Update("status", "已预定")
+			result[0] = db.Table("seat").Where(seatDetailInfo).Update("status", "已预定")
 
 			//生成订单信息
 			orderInfo.Price = seatDetailInfo.Price
@@ -263,11 +264,19 @@ func main() {
 			orderInfo.OrderStatus = "未付款"
 
 			//数据库创建订单信息
-			db.Table("order").Create(&orderInfo)
+			result[1] = db.Table("order").Create(&orderInfo)
 			//修改机次状态
 			db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 			if flightDetailInfo.SeatLeft == 0 {
-				db.Table("flight").Where(flightDetailInfo).Update("status", "已满")
+				result[2] = db.Table("flight").Where(flightDetailInfo).Update("status", "已满")
+			}
+
+			for _, value := range result {
+				if value.Error == nil {
+					reserveReturn.ResponeInfo.Code = 1
+					reserveReturn.ResponeInfo.Msg = value.Error.Error()
+					c.JSON(http.StatusOK, reserveReturn)
+				}
 			}
 
 			//部分参数初始化
@@ -292,7 +301,7 @@ func main() {
 			reserveReturn.CancelUrl = str1 + str2 + "1"
 			c.JSON(http.StatusOK, reserveReturn)
 		} else { //座位状态不为空则返回Code和Msg
-			reserveReturn.ResponeInfo.Code = 1
+			reserveReturn.ResponeInfo.Code = 2
 			reserveReturn.ResponeInfo.Msg = "Failed. The seat has been reserved"
 			c.JSON(http.StatusOK, reserveReturn)
 		}
@@ -353,21 +362,31 @@ func main() {
 		id := strconv.Itoa(orderId)
 
 		if Md5(id) == checkCode {
+			result := [10]*gorm.DB{}
 			db.Table("order").Where("orderId = ?", id).Take(&orderInfo)
 			if orderInfo.OrderStatus == "未付款" {
 				flight := orderInfo.FlightSeat.Flight
 				if payStatus == 0 { //付款成功
-					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
-					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
-					c.String(http.StatusOK, "付款成功")
+					result[0] = db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
+					result[1] = db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
 				} else { //取消订单
-					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
-					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
-					db.Table("flight").Find(&flightDetailInfo, FlightInfo{Flight: flight})
+					result[0] = db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
+					result[1] = db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
+					result[2] = db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 					if flightDetailInfo.SeatLeft != 0 {
-						db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
+						result[3] = db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
 					}
-					c.String(http.StatusOK, "取消成功")
+				}
+				for _, value := range result {
+					if value.Error == nil {
+						c.String(http.StatusOK, "数据库错误："+value.Error.Error())
+						return
+					}
+				}
+				if payStatus == 0 {
+					c.String(http.StatusOK, "支付成功")
+				} else {
+					c.String(http.StatusOK, "订单取消")
 				}
 				// 向管道内放入完成的ID
 				orderChan <- orderId
