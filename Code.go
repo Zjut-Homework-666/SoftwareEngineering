@@ -274,7 +274,7 @@ func main() {
 				return
 			}
 			//修改机次状态
-			db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
+			db.Table("flightinfo").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 			if flightDetailInfo.SeatLeft == 0 {
 				db.Table("flight").Where(flightDetailInfo).Update("status", "已满")
 			}
