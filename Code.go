@@ -183,16 +183,18 @@ func main() {
 	}()
 
 	ticker := time.NewTicker(10 * time.Minute)
-	flightList := [100]FlightInfo{}
+	flightList := [10]FlightInfo{}
 	orderList := [100]OrderInfo{}
 	message := `
-    <p>尊敬的%s旅客,您好</p>
-	<p style="text-indent:2em">您购买的由%s飞往%s的%s航班即将起飞。</p> 
-	<p style="text-indent:2em">请于航班起飞前60分钟到机场进行核验</p>
+    <p>尊敬的 <b>%s</b> 旅客,您好</p>
+	<p style="text-indent:2em">您购买的由<b> %s 飞往 %s </b>的<b> %s 航班</b> 即将起飞。</p> 
+	<p style="text-indent:2em">请于航班起飞前60分钟到机场进行核验。</p>
 	`
 
-	mail := gomail.NewMessage()
-	mail.SetHeader("From", "机票预订系统")
+	mail := gomail.NewMessage(
+		gomail.SetEncoding(gomail.Unencoded),
+	)
+	mail.SetHeader("From", "AirTicket<548375790@qq.com>")
 	mail.SetHeader("Subject", "机票核验通知")
 	d := gomail.NewDialer(
 		"smtp.qq.com",
@@ -204,21 +206,23 @@ func main() {
 
 	go func() {
 		for range ticker.C {
-			fmt.Println("az")
-			startTime := time.Now()
-			endTime := time.Now().AddDate(0, 0, 1)
-			db.Table("flight").Where("arrTime > ? AND arrTime < ?", startTime, endTime).Find(&flightList)
-			for _, flight := range flightList {
-				db.Table("order").Where("orderStatus = ? AND flight = ?", "已付款", flight.Flight).Find(&orderList)
-				for _, order := range orderList {
-					db.Table("order").Where("orderId = ?", order.OrderId).Update("orderStatus", "已通知")
-					fmt.Println(order)
-					mail.SetHeader("To", order.UserInfo.Mail)
-					mail.SetBody("text/html", fmt.Sprintf(message, order.UserInfo.Name, flight.ArrPlace, flight.DepPlace))
+			startTime := time.Now().Format("2006-01-02 15:04:05")
+			endTime := time.Now().AddDate(0, 0, 1).Format("2006-01-02 15:04:05")
+			result := db.Table("flight").Where("arrTime > ? AND arrTime < ?", startTime, endTime).Find(&flightList)
+			n := result.RowsAffected
+			for i := 0; i < (int)(n); i++ {
+				result = db.Table("order").Where("orderstatus = ? AND flight = ?", "已付款", flightList[i].Flight).Find(&orderList)
+				n1 := result.RowsAffected
+				for j := 0; j < (int)(n1); j++ {
+					fmt.Println(orderList[j])
+					mail.SetHeader("To", orderList[j].UserInfo.Mail)
+					mail.SetBody("text/html", fmt.Sprintf(message, orderList[j].UserInfo.Name, flightList[i].ArrPlace, flightList[i].DepPlace, flightList[i].Flight))
 					if err := d.DialAndSend(mail); err != nil {
-						panic(err)
+						fmt.Println(err.Error())
 					}
+					db.Table("order").Where("orderId = ?", orderList[j].OrderId).Update("orderStatus", "已通知")
 				}
+
 			}
 		}
 	}()
@@ -241,8 +245,12 @@ func main() {
 		flight := reserveInfo.FlightSeat.Flight
 		seat := reserveInfo.FlightSeat.Seat
 		seatDetailInfo := SeatDetailInfo{Flight: flight, Seat: seat}
-		db.Table("seat").Take(&seatDetailInfo, seatDetailInfo)
-
+		result := db.Table("seat").Take(&seatDetailInfo, seatDetailInfo)
+		if result.Error != nil {
+			reserveReturn.ResponeInfo.Msg = result.Error.Error()
+			reserveReturn.ResponeInfo.Code = 1
+			return
+		}
 		if seatDetailInfo.Status == "空" { //座位状态为空则进行预定
 
 			reserveReturn.ResponeInfo.Code = 0
@@ -259,7 +267,12 @@ func main() {
 			orderInfo.OrderStatus = "未付款"
 
 			//数据库创建订单信息
-			db.Table("order").Create(&orderInfo)
+			result := db.Table("order").Create(&orderInfo)
+			if result.Error != nil {
+				reserveReturn.ResponeInfo.Msg = result.Error.Error()
+				reserveReturn.ResponeInfo.Code = 1
+				return
+			}
 			//修改机次状态
 			db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 			if flightDetailInfo.SeatLeft == 0 {
@@ -374,6 +387,8 @@ func main() {
 				c.String(http.StatusOK, "订单已成功付款")
 			} else if orderInfo.OrderStatus == "已取消" {
 				c.String(http.StatusOK, "订单已取消")
+			} else {
+				c.String(http.StatusOK, "数据库错误")
 			}
 		}
 	})
