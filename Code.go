@@ -244,12 +244,12 @@ func main() {
 		db.Table("seat").Take(&seatDetailInfo, seatDetailInfo)
 
 		if seatDetailInfo.Status == "空" { //座位状态为空则进行预定
-			result := [10]*gorm.DB{}
+
 			reserveReturn.ResponeInfo.Code = 0
 			reserveReturn.ResponeInfo.Msg = "success"
 
 			//更新座位数据库并获取价格
-			result[0] = db.Table("seat").Where(seatDetailInfo).Update("status", "已预定")
+			db.Table("seat").Where(seatDetailInfo).Update("status", "已预定")
 
 			//生成订单信息
 			orderInfo.Price = seatDetailInfo.Price
@@ -259,19 +259,11 @@ func main() {
 			orderInfo.OrderStatus = "未付款"
 
 			//数据库创建订单信息
-			result[1] = db.Table("order").Create(&orderInfo)
+			db.Table("order").Create(&orderInfo)
 			//修改机次状态
 			db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 			if flightDetailInfo.SeatLeft == 0 {
-				result[2] = db.Table("flight").Where(flightDetailInfo).Update("status", "已满")
-			}
-
-			for _, value := range result {
-				if value.Error == nil {
-					reserveReturn.ResponeInfo.Code = 1
-					reserveReturn.ResponeInfo.Msg = value.Error.Error()
-					c.JSON(http.StatusOK, reserveReturn)
-				}
+				db.Table("flight").Where(flightDetailInfo).Update("status", "已满")
 			}
 
 			//部分参数初始化
@@ -357,25 +349,18 @@ func main() {
 		id := strconv.Itoa(orderId)
 
 		if Md5(id) == checkCode {
-			result := [10]*gorm.DB{}
 			db.Table("order").Where("orderId = ?", id).Take(&orderInfo)
 			if orderInfo.OrderStatus == "未付款" {
 				flight := orderInfo.FlightSeat.Flight
 				if payStatus == 0 { //付款成功
-					result[0] = db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
-					result[1] = db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
+					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
+					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
 				} else { //取消订单
-					result[0] = db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
-					result[1] = db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
-					result[2] = db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
+					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
+					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
+					db.Table("flight").Take(&flightDetailInfo, FlightInfo{Flight: flight})
 					if flightDetailInfo.SeatLeft != 0 {
-						result[3] = db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
-					}
-				}
-				for _, value := range result {
-					if value.Error == nil {
-						c.String(http.StatusOK, "数据库错误："+value.Error.Error())
-						return
+						db.Table("flight").Where(FlightInfo{Flight: flight}).Update("status", "售票中")
 					}
 				}
 				if payStatus == 0 {
@@ -426,36 +411,36 @@ func main() {
 		c.BindJSON(&checkInfo)
 		// TODO:杨子博,难度⭐⭐
 		checkReturn := CheckReturn{}
+		orderList := [10]OrderInfo{}
+		flightList := [10]string{}
+		flightInfo := FlightInfo{}
 		checkReturn.ResponeInfo.Msg = "Success"
 		checkReturn.ResponeInfo.Code = 0
+		str := [2]string{"已通知", "已核验"}
 
-		name := checkInfo.UserInfo.Name
-		phone := checkInfo.UserInfo.Phone
-		id := checkInfo.UserInfo.Id
-
-		/**
-		*SELECT
-		*	*
-		*FROM
-		*	( `order` JOIN flight ON flight.flight = `order`.flight )
-		*WHERE
-		*	`order`.`name` = 'qwer'
-		*	AND phone = 12341234
-		*	AND id = '12342345'
-		*ORDER BY depTime
-		 */
-		err := db.Raw("SELECT*FROM( `order` JOIN flight ON flight.flight = `order`.flight ) WHERE`order`.`name` = ? AND phone = ? AND id = ? ORDER BY depTime", name, phone, id).First(&checkReturn.FlightSeat)
-
-		if err.Error != nil {
-			//核验失败
-			checkReturn.ResponeInfo.Code = 1
-			checkReturn.ResponeInfo.Msg = "无匹配用户！"
-			c.JSON(http.StatusOK, checkReturn)
+		db.Table("order").Where(OrderInfo{UserInfo: checkInfo.UserInfo}).Where("orderstatus IN (?)", str).Find(&orderList)
+		for i, value := range orderList {
+			flightList[i] = value.FlightSeat.Flight
 		}
-
-		db.Table("flight").Where("flight = ?", checkReturn.FlightSeat.Flight).Find(&checkReturn.FlightInfo)
+		result := db.Table("flight").Where("flight IN (?)", flightList).Order("arrTime").Take(&flightInfo)
+		if result.Error != nil {
+			checkReturn.ResponeInfo.Msg = result.Error.Error()
+			checkReturn.ResponeInfo.Code = 1
+		}
+		checkReturn.FlightInfo = flightInfo
+		for _, value := range orderList {
+			if value.FlightSeat.Flight == flightInfo.Flight {
+				checkReturn.FlightSeat = value.FlightSeat
+				if value.OrderStatus == "已通知" {
+					db.Table("order").Where("orderId = ?", value.OrderId).Update("orderstatus", "已核验")
+				} else if value.OrderStatus == "已核验" {
+					checkReturn.ResponeInfo.Msg = "该订单已核验"
+					checkReturn.ResponeInfo.Code = 2
+				}
+				break
+			}
+		}
 		checkReturn.Name = checkInfo.UserInfo.Name
-
 		c.JSON(http.StatusOK, checkReturn)
 
 	})
@@ -475,8 +460,6 @@ func main() {
 			seatReturn.ResponeInfo.Msg = err.Error.Error()
 			seatReturn.ResponeInfo.Code = 1
 		}
-		fmt.Print(seatReturn.Seats)
-
 		c.JSON(http.StatusOK, seatReturn)
 	})
 
