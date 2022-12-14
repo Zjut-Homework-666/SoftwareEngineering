@@ -163,11 +163,6 @@ func Md5(str string) string {
 	return hex.EncodeToString(bytes)
 }
 
-// 发送邮件给对应的邮箱
-func Notice() {
-	//TODO:严伟志,难度⭐⭐⭐⭐⭐
-}
-
 func main() {
 	db := InitDB()
 
