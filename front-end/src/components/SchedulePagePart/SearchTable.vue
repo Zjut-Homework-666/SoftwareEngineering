@@ -1,5 +1,5 @@
 <!--suppress ALL -->
-<template>
+<template #default="scope">
 
     <div id="conditionArea">
         <el-form id="searchForm" :inline="true" :model="searchForm" class="demo-form-inline">
@@ -98,6 +98,24 @@
                     <el-button type="primary" size="default" style="width: 40%" text @click="dialogVisible = true;showChart(scope.row)" >
                         预订
                     </el-button>
+                    <el-dialog
+                            v-model="dialogVisible"
+                            title="座位选择"
+                            width="30%"
+                            :open-delay="300"
+                    >
+                        <div ref="chartDom" style="width: 400px; height: 800px"></div>
+                        <template #footer >
+                          <span class="dialog-footer">
+                            <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
+                                取消
+                            </el-button>
+                            <el-button type="primary" @click="SchheduleButton(scope.row.flight)" style="width: 100px;height: 40px;">
+                                确定
+                            </el-button>
+                          </span>
+                        </template>
+                    </el-dialog>
                 </template>
             </el-table-column>
         </el-table>
@@ -118,24 +136,6 @@
         </div>
     </div>
 
-    <el-dialog
-            v-model="dialogVisible"
-            title="座位选择"
-            width="30%"
-            :open-delay="300"
-    >
-        <div ref="chartDom" style="width: 400px; height: 800px"></div>
-        <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
-            取消
-        </el-button>
-        <el-button type="primary" @click="SchheduleButton" style="width: 100px;height: 40px;">
-            确定
-        </el-button>
-      </span>
-        </template>
-    </el-dialog>
 
 </template>
 
@@ -145,9 +145,8 @@ import {ref, reactive, getCurrentInstance, onMounted} from 'vue'
 import axios from 'axios';
 import { ElTable, type TableColumnCtx} from 'element-plus'
 import * as echarts from 'echarts';
-// import { useStore } from 'vuex' // 引入useStore 方法
-// import bus from '../../utils'
 // import jutils from '../../../node_modules/jutils'
+import router from '../../router'
 
 interface flightDetailInfo {  // 机次信息
     flight: string  // 机次
@@ -312,7 +311,6 @@ const handleSeatInfo = (seatInfo: seatDetailInfo[]) => {
 
 // 显示预定飞机座位图形
 const showChart = (rowData) => {
-
     type EChartsOption = echarts.EChartsOption;
     var option: EChartsOption;
 
@@ -629,11 +627,10 @@ const tagCtrl = (value: string) => {
 
 // const store = useStore()
 
+// const store = useStore()/
+// import bus from '../../utils'
 
-const SchheduleButton = (rowData) =>{
-    let config = {
-        headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
-    };
+const SchheduleButton = (flight) =>{
     let userInfo = {
         name : '王五',
         sex : '女',
@@ -642,28 +639,36 @@ const SchheduleButton = (rowData) =>{
         id : '12312312312312312'
     }
     let flightSeat = {
-        flight : rowData.flight,
-        seat : selectedNames.value[1]
+        flight : flight,
+        seat : selectedNames.value
     }
     let data = {
         userInfo,
         flightSeat
     }
 
-    axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data,config)
+    let Res = {
+        OrderId:0,
+        payUrl:'',
+        cancelUrl:''
+    }
+    console.log(data)
+    axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data)
             .then(function (ret) {
                 console.log(ret.data)
-                let payURL = ret.data.payUrl;
-                let cancelURL = ret.data.cancelUrl;
-                let orderId = ret.data.orderId;
-                console.log(payURL)
-                console.log(cancelURL)
-                console.log(orderId)
-
-                // let
-                // bus.emit('GetPaymentInfo',)
-                // todo: 以订单号为key跳转到付款界面 读取放到bus中的链接
-
+                Res.payUrl = ret.data.payUrl;
+                Res.cancelUrl = ret.data.cancelUrl;
+                Res.OrderId = ret.data.orderId;
+                // 如果成功
+                // bus.emit(Res.OrderId.toString(),Res)
+                router.push({
+                    path: '/PaymentPage',
+                    query: {
+                        id : Res.OrderId,
+                        pay : Res.payUrl,
+                        cancel : Res.cancelUrl
+                    }
+                })
             })
 
     dialogVisible.value = false;

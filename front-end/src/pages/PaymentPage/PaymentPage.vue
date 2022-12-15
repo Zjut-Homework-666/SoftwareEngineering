@@ -78,12 +78,8 @@
 
 </style>
 
-<script setup>
-// import HomePage_bts from "./HomePage_bts.vue"
+<script lang="ts" setup>
 import QRCode from "./QRCode.vue";
-// export default {
-//     name: 'HomePage',
-//     methods: {}
-// }
+
 
 </script>

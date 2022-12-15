@@ -12,34 +12,34 @@
                     <span>取消</span>
                 </el-button>
             </el-form-item>
-            <el-dialog v-model="centerDialogVisible" title="付款成功" width="30%" align-center>
-                <div class="dia">
-                    <el-form class="dia_form">
-                    <el-form-item class="dia_row" label-width="75" label="姓名:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="性别:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="身份证号:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="电话号码:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="订单编号:">
-                        XXXXXX
-                    </el-form-item>
-                    </el-form>
-                </div>
-                <template #footer>
-                    <span class="dialog-footer">
-                        <el-button type="primary" @click="centerDialogVisible = false">
-                            Confirm
-                        </el-button>
-                    </span>
-                </template>
-            </el-dialog>
+<!--            <el-dialog v-model="centerDialogVisible" title="付款成功" width="30%" align-center>-->
+<!--                <div class="dia">-->
+<!--                    <el-form class="dia_form">-->
+<!--                    <el-form-item class="dia_row" label-width="75" label="姓名:">-->
+<!--                        XXXXXX-->
+<!--                    </el-form-item>-->
+<!--                    <el-form-item class="dia_row" label-width="75" label="性别:">-->
+<!--                        XXXXXX-->
+<!--                    </el-form-item>-->
+<!--                    <el-form-item class="dia_row" label-width="75" label="身份证号:">-->
+<!--                        XXXXXX-->
+<!--                    </el-form-item>-->
+<!--                    <el-form-item class="dia_row" label-width="75" label="电话号码:">-->
+<!--                        XXXXXX-->
+<!--                    </el-form-item>-->
+<!--                    <el-form-item class="dia_row" label-width="75" label="订单编号:">-->
+<!--                        XXXXXX-->
+<!--                    </el-form-item>-->
+<!--                    </el-form>-->
+<!--                </div>-->
+<!--                <template #footer>-->
+<!--                    <span class="dialog-footer">-->
+<!--                        <el-button type="primary" @click="centerDialogVisible = false">-->
+<!--                            Confirm-->
+<!--                        </el-button>-->
+<!--                    </span>-->
+<!--                </template>-->
+<!--            </el-dialog>-->
         </el-form>
     </div>
 </template>
@@ -127,40 +127,38 @@
 </style>
 
 <script lang="ts" setup>
-// import axios from 'axios';
+import axios from 'axios';
 import router from '../../router/index.js'
-// import { ref } from 'vue'
+// import { useRoute } from "vue-router";
 import { ElMessageBox } from 'element-plus'
-// import QrcodeVue from 'qrcode.vue'
-import {getCurrentInstance, onMounted, ref} from "vue";
+
+import {onMounted, ref} from "vue";
 import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
 
 let count = ref('');  //倒计时
 let seconds= 900; // 10天的秒数
 
-const proxy :any = getCurrentInstance().appContext.config.globalProperties
+// const proxy :any = getCurrentInstance().appContext.config.globalProperties
 
-let QRCodeURL = proxy.$url + proxy.$BackendPort;
 
-let payURL = ref('');
-let cancelURL = ref('');
-let orderId = ref('');
+
+// let id = router.currentRoute.value.query.id
+let pay = router.currentRoute.value.query.pay
+let cancel = router.currentRoute.value.query.cancel
+const QRCodeURL = pay;
 
 onMounted(()=>{
     Time() //调用定时器
 
-    // while(true){
-    //     // break;
-    // }
 })
 
 // eslint-disable-next-line no-unused-vars
-const GetPaymentInfo = (pay,cancel,orderID) =>{
-    payURL.value = pay;
-    cancelURL.value = cancel;
-    orderId.value = orderID;
-}
+// const GetPaymentInfo = (pay,cancel,orderID) =>{
+//     payURL.value = pay;
+//     cancelURL.value = cancel;
+//     orderId.value = orderID;
+// }
 
 const Time = () =>{
     setInterval(() => {
@@ -179,22 +177,16 @@ const countDown = () => {
     // count = '14:59'
 }
 
-
-// const url = 'http://localhost:8080'
-// const test = (dataUrl,id) =>{
-//     console.log(url, id)
-// }
-
 const Cancel = () => {
-    // console.log("HomePage")
-    router.push('/HomePage')
+    axios.get(cancel)
+    router.push('/')
 }
 
 const Return = () => {
-    // console.log("HomePage")
-    router.push('/HomePage')
+    axios.get(cancel)
     ElMessageBox.alert('支付超时，返回主界面', '提示', {
         confirmButtonText: 'OK',
     })
+    router.push('/')
 }
 </script>

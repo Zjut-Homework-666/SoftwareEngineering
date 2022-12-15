@@ -16,18 +16,20 @@ const routes = [{
         path: "/Check",
         component: CheckPage
     }, {
-        path: "/PaymentPage",
-        component: PaymentPage
-    }, {
+        name:'PaymentPage',
+        path: '/PaymentPage',
+        component: PaymentPage,
+}, {
         path: "/PaymentFail",
         component: PaymentFailedPage
-    },{
-        path: "/test",
-        component: testQRCode
-    },{
-        path: "/:pathMatch(.*)",
-        redirect: "/"
+    }, {
+    path: "/test",
+    component: testQRCode
     }
+    // },{
+    //     path: "/:pathMatch(.*)",
+    //     redirect: "/"
+    // }
 ];
 const router = createRouter({
     history: createWebHashHistory(),

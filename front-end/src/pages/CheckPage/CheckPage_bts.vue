@@ -172,9 +172,10 @@ const submitUserInfo = () => {// eslint-disable-line no-unused-vars
         };
         let userInfo = {
             name: user_Info.value.username,
-            phone:user_Info.value.phonenum,
+            phone:parseInt(user_Info.value.phonenum),
             id:user_Info.value.idnum
         };
+        console.log(userInfo)
         axios.post(proxy.$url+proxy.$BackendPort+"/check",userInfo,config)
             .then(function (ret){
                 console.log(ret.data)

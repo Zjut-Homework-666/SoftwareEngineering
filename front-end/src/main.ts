@@ -9,6 +9,7 @@ import axios from 'axios'
 // import './plugins/axios'
 import App from './App.vue'
 import store from './store/index.js'
+// import Bus from '../src/utils/index'
 
 const app = createApp(App)
 
@@ -22,6 +23,7 @@ app.use(router)
 app.use(ElementPlus)
 app.config.globalProperties.$echarts = echarts
 app.config.globalProperties.$axios = axios
+// app.prototype.$bus = bus
 
 
 // 将 store 实例作为插件安装
