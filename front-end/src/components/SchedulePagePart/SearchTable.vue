@@ -144,7 +144,7 @@ import axios from 'axios';
 import { ElMessageBox, ElTable} from 'element-plus'
 import * as echarts from 'echarts';
 // import { useStore } from 'vuex' // 引入useStore 方法
-import bus from '../../utils'
+// import bus from '../../utils'
 
 interface flightDetailInfo {  // 机次信息
     flight: string  // 机次
@@ -303,20 +303,53 @@ const handleSeatInfo = (seatInfo: seatDetailInfo[]) => {
 
 // 显示预定飞机座位图形
 const showChart = (rowData) => {
-    setTimeout(()=>{
-
-        if(flag.value === 0) {
-            flightSeat = echarts.init(chartDom.value)
-        }
-        type EChartsOption = echarts.EChartsOption;
-        var option: EChartsOption;
-
-        collectSeatInfo(rowData.flight)
-
+    type EChartsOption = echarts.EChartsOption;
+    var option: EChartsOption;
+    if(flag.value === 1) {
+        option = {
+            tooltip: {},
+            geo: {
+                map: 'flight-seats',
+                roam: false,
+                selectedMode: 'single',
+                layoutCenter: ['30%', '50%'],
+                layoutSize: '200%',
+                tooltip: {
+                    show: true
+                },
+                itemStyle: {
+                    color: '#fff'
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: undefined,
+                        borderColor: 'green',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false
+                    }
+                },
+                select: {
+                    itemStyle: {
+                        color: 'green'
+                    },
+                    label: {
+                        show: false,
+                        textBorderColor: '#fff',
+                        textBorderWidth: 2
+                    }
+                },
+                regions: []
+            }
+        };
+        flightSeat.setOption(option);
+    }
+    setTimeout(async ()=>{
+        await collectSeatInfo(rowData.flight)
         axios.get('./flight-seats.svg').then((ret) => {
-            // @ts-ignore
-            if(flag.value === 0){
-                flag.value = 1;
+            if(flag.value === 0) {
+                flightSeat = echarts.init(chartDom.value)
                 echarts.registerMap('flight-seats', { svg: ret.data });
             }
             option = {
@@ -356,23 +389,16 @@ const showChart = (rowData) => {
                     regions: handleSeatInfo(seatInfo.value)
                 }
             };
-
-            flightSeat.setOption(option);
-
+            flightSeat.setOption(option, true);
             // Get selected seats.
-            flightSeat.on('geoselectchanged', function (params: any) {
-                selectedNames = params.allSelected[0].name.slice();
-
-                // Remove taken seats.   TODO:要改
-                for (var i = selectedNames.value.length - 1; i >= 0; i--) {
-                    if (seatInfo.value.indexOf(selectedNames.value[i]) >= 0) {
-                        selectedNames.value.splice(i, 1);
-                    }
-                }
-                console.log('selected', selectedNames.value);
-            });
+            if(flag.value === 0){
+                flag.value = 1;
+                flightSeat.on('geoselectchanged', function (params: any) {
+                    selectedNames.value = params.allSelected[0].name[0];
+                    console.log('select', selectedNames.value);
+                });
+            }
         });
-
         option && flightSeat.setOption(option);
     },100)
 }
@@ -603,21 +629,21 @@ const SchheduleButton = () =>{
         flightSeat
     }
     console.log(selectedNames.value)
-    console.log('1')
+
     axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data,config)
         .then(function (ret) {
             console.log(ret.data)
             let payURL = ret.data.payUrl;
             let cancelURL = ret.data.cancelUrl;
             let orderId = ret.data.orderId;
-            console.log(orderId)
-            // bus.emit('GetPaymentInfo',)
+
             let url = {
                 payURL:payURL,
                 cancelURL:cancelURL
             }
-            // 带着订单编号跳转到付款界面 将两个链接放到bus中以订单编号为key
-            console.log('url')
+            // TODO:带着订单编号跳转到付款界面 将两个链接放到bus中以订单编号为key
+            // bus.emit('GetPaymentInfo',)
+            console.log(orderId)
             console.log(url)
         })
 
