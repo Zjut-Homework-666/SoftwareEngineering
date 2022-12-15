@@ -288,11 +288,18 @@ func main() {
 			str2 := "&checkCode=" + checkCode + "&payStatus="
 
 			//生成一个十五分钟后自动取消的协程，并将其取消函数绑定至Map
-			d := time.Now().Add(time.Minute * 2)
+			d := time.Now().Add(time.Second * 20)
 			ctx, cancel := context.WithDeadline(context.Background(), d)
 			orderCancelMap[orderId] = cancel
 			orderCtxMap[orderId] = ctx
 			orderUrlMap[orderId] = str1 + str2 + "1"
+			go func() {
+				<-ctx.Done()
+				resp, _ := http.Get(orderUrlMap[orderId])
+				resp.Body.Close()
+				delete(orderUrlMap, orderId)
+				delete(orderCtxMap, orderId)
+			}()
 
 			//返回预定信息
 			reserveReturn.ResponeInfo.Msg = "Ticket booked successfully, waiting for payment"
@@ -312,7 +319,13 @@ func main() {
 		orderId, _ := strconv.Atoi(c.Query("orderId"))
 
 		reserveStatusReturn := ReserveStatusReturn{}
-		ctx := orderCtxMap[orderId]
+		ctx, ok := orderCtxMap[orderId]
+		if !ok {
+			reserveStatusReturn.ResponeInfo.Msg = "The order has been closed."
+			reserveStatusReturn.ResponeInfo.Code = 3
+			c.JSON(http.StatusOK, reserveStatusReturn)
+			return
+		}
 		d := time.Now().Add(time.Minute * 1)
 		ctx1, cancel := context.WithDeadline(context.Background(), d)
 		defer cancel()
@@ -323,26 +336,16 @@ func main() {
 			reserveStatusReturn.ResponeInfo.Code = 1
 			c.JSON(http.StatusOK, reserveStatusReturn)
 		case <-ctx.Done():
-			cancelUrl := orderUrlMap[orderId]
 			//因为超时导致的取消
 			if ctx.Err() == context.DeadlineExceeded {
-				resp, err := http.Get(cancelUrl)
-				if err != nil {
-					reserveStatusReturn.ResponeInfo.Msg = err.Error()
-					reserveStatusReturn.ResponeInfo.Code = 2
-				} else {
-					reserveStatusReturn.ResponeInfo.Msg = "Order is cancelled after timeout."
-					reserveStatusReturn.ResponeInfo.Code = 1
-				}
-				resp.Body.Close()
+				reserveStatusReturn.ResponeInfo.Msg = "Order is cancelled after timeout."
+				reserveStatusReturn.ResponeInfo.Code = 2
 			} else { //手动进行的取消，即付款成功或取消付款
 				reserveStatusReturn.ResponeInfo.Msg = "The order ends normally."
 				reserveStatusReturn.ResponeInfo.Code = 0
 			}
 			//返回数据
 			delete(orderCtxMap, orderId)
-			delete(orderUrlMap, orderId)
-
 			reserveStatusReturn.OrderInfo.OrderId = orderId
 			db.Table("order").Take(&reserveStatusReturn.OrderInfo)
 			reserveStatusReturn.FlightInfo.Flight = reserveStatusReturn.OrderInfo.FlightSeat.Flight
