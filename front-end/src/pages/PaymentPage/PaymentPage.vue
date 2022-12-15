@@ -78,8 +78,7 @@
 
 </style>
 
-<script lang="ts" setup>
+<script setup>
 import QRCode from "./QRCode.vue";
-
 
 </script>

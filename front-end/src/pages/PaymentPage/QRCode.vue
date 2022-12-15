@@ -2,11 +2,10 @@
     <div class="bt_ct">
         <el-form class="bt_form" label-width="70px">
             <p class="title">请扫描二维码付款</p>
-<!--            <img id="QRCode" src="../../assets/QRCode.jpg" alt="" width=300 height=300>-->
+           <!-- <img id="QRCode" src="../../assets/QRCode.jpg" alt="" width=300 height=300> -->
 <!--            <vue-qr text="Hello world!" :callback="test" qid="testid"></vue-qr>-->
             <vue-qr background-color="#f8f6f6" :text='QRCodeURL' :size="300"></vue-qr>
-            <div class="title">剩余支付时间：{{count.value}}</div>
-
+            <div class="title">剩余支付时间：{{count}}</div>
             <el-form-item class="bt_row" label-width="0">
                 <el-button class="bt" type="primary" @click="Cancel">
                     <span>取消</span>
@@ -133,11 +132,11 @@ import router from '../../router/index.js'
 import { ElMessageBox } from 'element-plus'
 
 import {onMounted, ref} from "vue";
-import VueQr from 'vue-qr/src/packages/vue-qr.vue'
+// import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
 
 let count = ref('');  //倒计时
-let seconds= 900; // 10天的秒数
+let seconds= 900; // 15分钟的秒数
 
 // const proxy :any = getCurrentInstance().appContext.config.globalProperties
 
@@ -150,7 +149,6 @@ const QRCodeURL = pay;
 
 onMounted(()=>{
     Time() //调用定时器
-
 })
 
 // eslint-disable-next-line no-unused-vars
@@ -160,7 +158,7 @@ onMounted(()=>{
 //     orderId.value = orderID;
 // }
 
-const Time = () =>{
+const Time = () => {
     setInterval(() => {
         seconds -= 1
         countDown()
@@ -169,10 +167,10 @@ const Time = () =>{
     }, 1000)
 }
 const countDown = () => {
-    let m = (seconds/60)%60;
-    // m = m < 10 ? 0 + m : m
+    let m = parseInt(seconds/60%60);
+     m = m < 10 ? 0 + m : m
     let s = seconds % 60;
-    // s = s < 10 ? "0" + s : s
+    s = s < 10 ? "0" + s : s
     count.value = m.toString() + '分' + s.toString() + '秒'
     // count = '14:59'
 }

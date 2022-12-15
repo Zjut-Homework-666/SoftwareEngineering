@@ -69,8 +69,8 @@ const handleSchedule = () => {
 
 }
 // const handleCheck = () => {
-//     console.log("PaymentSuccessful")
-//     router.push('/PaymentSuccessful')
+//     console.log("PaymentPage")
+//     router.push('/PaymentPage')
 // }
 
 const handleCheck = () => {
