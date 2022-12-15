@@ -257,8 +257,12 @@ func main() {
 			reserveReturn.ResponeInfo.Msg = "success"
 
 			//更新座位数据库并获取价格
-			db.Table("seat").Where(seatDetailInfo).Update("status", "已预定")
-
+			result := db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: seat}).Update("status", "已预定")
+			if result.Error != nil {
+				reserveReturn.ResponeInfo.Msg = result.Error.Error()
+				reserveReturn.ResponeInfo.Code = 1
+				return
+			}
 			//生成订单信息
 			orderInfo.Price = seatDetailInfo.Price
 			orderInfo.FlightSeat = reserveInfo.FlightSeat
@@ -267,7 +271,7 @@ func main() {
 			orderInfo.OrderStatus = "未付款"
 
 			//数据库创建订单信息
-			result := db.Table("order").Create(&orderInfo)
+			result = db.Table("order").Create(&orderInfo)
 			if result.Error != nil {
 				reserveReturn.ResponeInfo.Msg = result.Error.Error()
 				reserveReturn.ResponeInfo.Code = 1
@@ -281,14 +285,13 @@ func main() {
 
 			//部分参数初始化
 			orderId := orderInfo.OrderId
-			fmt.Println(orderId)
 			id := strconv.Itoa(orderId)
 			checkCode := Md5(id)
 			str1 := "http://" + host + port + "/pay?orderId=" + id
 			str2 := "&checkCode=" + checkCode + "&payStatus="
 
 			//生成一个十五分钟后自动取消的协程，并将其取消函数绑定至Map
-			d := time.Now().Add(time.Second * 20)
+			d := time.Now().Add(time.Minute * 1)
 			ctx, cancel := context.WithDeadline(context.Background(), d)
 			orderCancelMap[orderId] = cancel
 			orderCtxMap[orderId] = ctx
