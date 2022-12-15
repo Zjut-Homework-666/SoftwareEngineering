@@ -11,12 +11,7 @@
             <el-form-item label="手机号">
                 <el-input v-model="user_Info.phonenum" placeholder="请输入手机号" clearable></el-input>
             </el-form-item>
-            <el-form-item label="邮箱">
-                <el-input v-model="user_Info.email" placeholder="请输入邮箱" clearable></el-input>
-            </el-form-item>
-            <el-form-item label="订单编号">
-                <el-input v-model="user_Info.ordernum" placeholder="请输入订单编号" clearable></el-input>
-            </el-form-item>
+
             <el-form-item class="bt_row" label-width="0">
                 <el-button class="bt" type="primary" @click="submitUserInfo">
                     <span>提交</span>
@@ -28,13 +23,12 @@
                         <el-header class="el-header">AIR TICKET</el-header>
                         <el-main>
                             <el-descriptions title="BOARDING PASS" direction="vertical" :column="4" >
-                                <el-descriptions-item label="PASSANGER NAME">MURPHY</el-descriptions-item>
-                                <el-descriptions-item label="DATE">2022.12.13</el-descriptions-item>
-                                <el-descriptions-item label="FROM/TO">杭州/北京</el-descriptions-item>
-                                <el-descriptions-item label="BOARING TIME">10:30</el-descriptions-item>
-                                <el-descriptions-item label="ARRIVAL TIME">12:30</el-descriptions-item>
-                                <el-descriptions-item label="FLIGHT NO.">LJ6581</el-descriptions-item>
-                                <el-descriptions-item label="SEAT">21B</el-descriptions-item>
+                                <el-descriptions-item label="PASSANGER NAME">{{ name }}</el-descriptions-item>
+                                <el-descriptions-item label="FROM/TO">{{ flightInfo.depPlace }}/{{ flightInfo.arrPlace }}</el-descriptions-item>
+                                <el-descriptions-item label="BOARING TIME">{{ flightInfo.depTime }}</el-descriptions-item>
+                                <el-descriptions-item label="ARRIVAL TIME">{{ flightInfo.arrTime }}</el-descriptions-item>
+                                <el-descriptions-item label="FLIGHT NO.">{{ flightInfo.flight }}</el-descriptions-item>
+                                <el-descriptions-item label="SEAT">{{ flightInfo.seat }}</el-descriptions-item>
                             </el-descriptions>
                         </el-main>
                         <el-footer class="el-footer">GATE CLOSES 30 MINUTES BEFORE DEPARTURE</el-footer>
@@ -161,12 +155,20 @@ const InfoEmpty = () => {// eslint-disable-line no-unused-vars
 }
 
 const proxy :any = getCurrentInstance().appContext.config.globalProperties
+
+let flightInfo = ref({
+    flight:'',
+    arrPlace:'',
+    depPlace:'',
+    depTime:'',
+    arrTime:'',
+    seat:''
+})
+let name = ref('')
 const submitUserInfo = () => {// eslint-disable-line no-unused-vars
     if (user_Info.value.username.length > 0
         && user_Info.value.phonenum.length > 0
-        && user_Info.value.idnum.length > 0
-        && user_Info.value.email.length > 0
-        && user_Info.value.ordernum.length > 0) {
+        && user_Info.value.idnum.length > 0) {
         console.log("CheckInfo!")
         let config = {
             headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
@@ -180,8 +182,22 @@ const submitUserInfo = () => {// eslint-disable-line no-unused-vars
         axios.post(proxy.$url+proxy.$BackendPort+"/check",userInfo,config)
             .then(function (ret){
                 console.log(ret.data)
+                if(ret.data.responeInfo.code == 0){
+                    flightInfo.value.flight = ret.data.flightInfo.flight
+                    flightInfo.value.arrPlace = ret.data.flightInfo.arrPlace
+                    flightInfo.value.depPlace = ret.data.flightInfo.depPlace
+                    flightInfo.value.arrTime = ret.data.flightInfo.arrTime
+                    flightInfo.value.depTime = ret.data.flightInfo.depTime
+                    flightInfo.value.seat = ret.data.flightSeat.seat
+                    name.value = user_Info.value.username
+                    centerDialogVisible.value=true
+                }
+                else {
+                    ElMessageBox.alert('核验失败', '提示', {
+                        confirmButtonText: '确定',
+                    })
+                }
             })
-        centerDialogVisible.value=true
     } else
         InfoEmpty()
 }

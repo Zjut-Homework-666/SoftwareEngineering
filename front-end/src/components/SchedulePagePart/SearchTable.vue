@@ -95,30 +95,31 @@
             </el-table-column>
             <el-table-column label="操作" width="150">
                 <template #default="scope">
-                    <el-button type="primary" size="default" style="width: 40%" text @click="dialogVisible = true;showChart(scope.row)" >
+                    <el-button type="primary" size="default" style="width: 40%" text @click="showChart(scope.row)" >
                         预订
                     </el-button>
-                    <el-dialog
-                            v-model="dialogVisible"
-                            title="座位选择"
-                            width="30%"
-                            :open-delay="300"
-                    >
-                        <div ref="chartDom" style="width: 400px; height: 800px"></div>
-                        <template #footer >
-                          <span class="dialog-footer">
-                            <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
-                                取消
-                            </el-button>
-                            <el-button type="primary" @click="SchheduleButton(scope.row.flight)" style="width: 100px;height: 40px;">
-                                确定
-                            </el-button>
-                          </span>
-                        </template>
-                    </el-dialog>
                 </template>
             </el-table-column>
+
         </el-table>
+        <el-dialog
+                v-model="dialogVisible"
+                title="座位选择"
+                width="30%"
+                :open-delay="300"
+        >
+            <div ref="chartDom" style="width: 400px; height: 800px"></div>
+            <template #footer>
+              <span class="dialog-footer">
+                <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
+                    取消
+                </el-button>
+                <el-button type="primary" @click="SchheduleButton()" style="width: 100px;height: 40px;">
+                    确定
+                </el-button>
+              </span>
+            </template>
+        </el-dialog>
         <div id="pagination">
             <el-pagination
                     @size-change="handleSizeChange"
@@ -143,7 +144,7 @@
 import {ref, reactive, getCurrentInstance, onMounted} from 'vue'
 // import Qs from 'qs'
 import axios from 'axios';
-import { ElTable, type TableColumnCtx} from 'element-plus'
+import {ElMessageBox, ElTable, type TableColumnCtx} from 'element-plus'
 import * as echarts from 'echarts';
 // import jutils from '../../../node_modules/jutils'
 import router from '../../router'
@@ -205,6 +206,7 @@ let seatInfo = ref([{
     price: '',  // 价格
     status: ''  // 状态
 }]);
+const flightSelect = ref('')
 let selectedNames = ref(String);  // 选择的座位
 
 onMounted(() => {
@@ -311,6 +313,8 @@ const handleSeatInfo = (seatInfo: seatDetailInfo[]) => {
 
 // 显示预定飞机座位图形
 const showChart = (rowData) => {
+    flightSelect.value = rowData.flight
+    dialogVisible.value = true;
     type EChartsOption = echarts.EChartsOption;
     var option: EChartsOption;
 
@@ -630,16 +634,17 @@ const tagCtrl = (value: string) => {
 // const store = useStore()/
 // import bus from '../../utils'
 
-const SchheduleButton = (flight) =>{
+const SchheduleButton = () =>{
+    console.log(flightSelect.value)
     let userInfo = {
-        name : '王五',
+        name : 'zz五',
         sex : '女',
         phone : 11231231231,
         mail : '1470603076@qq.com',
         id : '12312312312312312'
     }
     let flightSeat = {
-        flight : flight,
+        flight : flightSelect.value,
         seat : selectedNames.value
     }
     let data = {
@@ -660,18 +665,26 @@ const SchheduleButton = (flight) =>{
                 Res.cancelUrl = ret.data.cancelUrl;
                 Res.OrderId = ret.data.orderId;
                 // 如果成功
-                // bus.emit(Res.OrderId.toString(),Res)
-                router.push({
-                    path: '/PaymentPage',
-                    query: {
-                        id : Res.OrderId,
-                        pay : Res.payUrl,
-                        cancel : Res.cancelUrl
-                    }
-                })
+                if(ret.data.responeInfo.code == 0){
+                    router.push({
+                        path: '/PaymentPage',
+                        query: {
+                            id : Res.OrderId,
+                            pay : Res.payUrl,
+                            cancel : Res.cancelUrl
+                        }
+                    })
+                    dialogVisible.value = false;
+                }
+                else{
+                    console.log('这个座位已被预定')
+                    ElMessageBox.alert('这个座位已被预定', '提示', {
+                        confirmButtonText: '确定',
+                    })
+                }
             })
 
-    dialogVisible.value = false;
+
 }
 
 </script>

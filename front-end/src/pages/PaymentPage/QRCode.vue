@@ -20,11 +20,11 @@
                             :column="3"
                             :size="size"
                             >
-                                <el-descriptions-item label="FLIGHT NO.">HK8456</el-descriptions-item>
-                                <el-descriptions-item label="FROM/TO">杭州/广州</el-descriptions-item>
-                                <el-descriptions-item label="DEPARTUR TIME">15:30</el-descriptions-item>
-                                <el-descriptions-item label="ARRIVAL TIME">18:00</el-descriptions-item>
-                                <el-descriptions-item label="SEAT">C51</el-descriptions-item>
+                                <el-descriptions-item label="FLIGHT NO.">{{ flightInfo.flight }}</el-descriptions-item>
+                                <el-descriptions-item label="FROM/TO">{{ flightInfo.depPlace }}/{{ flightInfo.arrPlace }}</el-descriptions-item>
+                                <el-descriptions-item label="DEPARTUR TIME">{{ flightInfo.depTime }}</el-descriptions-item>
+                                <el-descriptions-item label="ARRIVAL TIME">{{ flightInfo.arrTime }}</el-descriptions-item>
+                                <el-descriptions-item label="SEAT">{{  flightInfo.seat  }}</el-descriptions-item>
                             </el-descriptions>
                             <el-descriptions
                             title="USER INFOMATION"
@@ -34,10 +34,10 @@
                             :style="blockMargin"
                             border
                             >
-                            <el-descriptions-item label="USERNAME">Murphy</el-descriptions-item>
-                            <el-descriptions-item label="TELEPHONE">15833213569</el-descriptions-item>
-                            <el-descriptions-item label="ID NUMBER">130181200203304514</el-descriptions-item>
-                            <el-descriptions-item label="E-MAIL">2280269097@qq.com</el-descriptions-item>
+                            <el-descriptions-item label="USERNAME">{{  userInfo.name  }}</el-descriptions-item>
+                            <el-descriptions-item label="TELEPHONE">{{ userInfo.phone }}</el-descriptions-item>
+                            <el-descriptions-item label="ID NUMBER">{{ userInfo.id }}</el-descriptions-item>
+                            <el-descriptions-item label="E-MAIL">{{ userInfo.mail }}</el-descriptions-item>
                             </el-descriptions>
                             <el-descriptions
                             title="ORDER INFOMATION"
@@ -47,18 +47,18 @@
                             :style="blockMargin"
                             border
                             >
-                            <el-descriptions-item label="ORDER TIME">18:06</el-descriptions-item>
-                            <el-descriptions-item label="PRICE">599</el-descriptions-item>
-                            <el-descriptions-item label="ORDER ID">8918918918925168</el-descriptions-item>
-                            <el-descriptions-item label="ORDER STATUS">PAYED</el-descriptions-item>
+                            <el-descriptions-item label="ORDER TIME">{{  orderInfo.orderTime  }}</el-descriptions-item>
+                            <el-descriptions-item label="PRICE">{{  orderInfo.price  }}</el-descriptions-item>
+                            <el-descriptions-item label="ORDER ID">{{ orderInfo.orderId }}</el-descriptions-item>
+                            <el-descriptions-item label="ORDER STATUS">{{  orderInfo.orderStatus  }}</el-descriptions-item>
                             </el-descriptions>
                         </el-header>
                     </el-container>
                 </div>
                 <template #footer>
                     <span class="dialog-footer">
-                        <el-button type="primary" @click="centerDialogVisible = false">
-                            Confirm
+                        <el-button type="primary" @click="centerDialogVisible = false;Cancel()">
+                            确定
                         </el-button>
                     </span>
                 </template>
@@ -155,24 +155,87 @@ import router from '../../router/index.js'
 // import { useRoute } from "vue-router";
 import { ElMessageBox } from 'element-plus'
 
-import {onMounted, ref} from "vue";
+import {getCurrentInstance, onMounted, ref} from "vue";
 import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
 
 let count = ref('');  //倒计时
 let seconds= 900; // 15分钟的秒数
 
-// const proxy :any = getCurrentInstance().appContext.config.globalProperties
+const proxy = getCurrentInstance().appContext.config.globalProperties
 
 
-// let id = router.currentRoute.value.query.id
+let id = router.currentRoute.value.query.id
 let pay = router.currentRoute.value.query.pay
 let cancel = router.currentRoute.value.query.cancel
 const QRCodeURL = pay;
+// const status = ref (1)
+const centerDialogVisible = ref(false)
 
 onMounted(()=>{
     Time() //调用定时器
+    ReserveStatus()
 })
+
+let flightInfo = ref({
+    flight:'',
+    arrPlace:'',
+    depPlace:'',
+    depTime:'',
+    arrTime:'',
+    seat:''
+})
+let orderInfo = ref({
+    orderTime:'',
+    price:0,
+    orderId:0,
+    orderStatus:'',
+})
+let userInfo = ref({
+    name:'',
+    sex:'',
+    phone:0,
+    mail:'',
+    id:'',
+})
+
+const ReserveStatus = () =>{
+    axios.get(proxy.$url+proxy.$BackendPort+'/reserveStatus',{
+        params:{
+            orderId:id
+        }
+    }).then(function (ret){
+        if(ret.data.responeInfo.code == 1){
+            ReserveStatus()
+        }
+        if(ret.data.responeInfo.code == 0){
+            //付款成功
+            centerDialogVisible.value = true;
+            console.log(ret.data)
+            flightInfo.value.flight = ret.data.flightInfo.flight
+            flightInfo.value.arrPlace = ret.data.flightInfo.arrPlace
+            flightInfo.value.depPlace = ret.data.flightInfo.depPlace
+            flightInfo.value.arrTime = ret.data.flightInfo.arrTime
+            flightInfo.value.depTime = ret.data.flightInfo.depTime
+            flightInfo.value.seat = ret.data.orderInfo.flightSeat.seat
+
+            orderInfo.value.orderTime = ret.data.orderInfo.orderTime
+            orderInfo.value.price = ret.data.orderInfo.price
+            orderInfo.value.orderId = ret.data.orderInfo.orderId
+            orderInfo.value.orderStatus = ret.data.orderInfo.orderStatus
+
+            userInfo.value.name = ret.data.orderInfo.userInfo.name
+            userInfo.value.sex = ret.data.orderInfo.userInfo.sex
+            userInfo.value.phone = ret.data.orderInfo.userInfo.phone
+            userInfo.value.mail = ret.data.orderInfo.userInfo.mail
+            userInfo.value.id = ret.data.orderInfo.userInfo.id
+        }
+        if(ret.data.responeInfo.code == 2){
+            //超时未付款
+            Return()
+        }
+    })
+}
 
 // eslint-disable-next-line no-unused-vars
 // const GetPaymentInfo = (pay,cancel,orderID) =>{
@@ -195,7 +258,7 @@ const countDown = () => {
     let s = seconds % 60;
     s = s < 10 ? "0" + s : s
     count.value = m.toString() + '分' + s.toString() + '秒'
-    console.log(count.value)
+    // console.log(count.value)
     // count = '14:59'
 }
 
@@ -207,7 +270,7 @@ const Cancel = () => {// eslint-disable-line no-unused-vars
 const Return = () => {
     axios.get(cancel)
     ElMessageBox.alert('支付超时，返回主界面', '提示', {
-        confirmButtonText: 'OK',
+        confirmButtonText: '确定',
     })
     router.push('/')
 }
