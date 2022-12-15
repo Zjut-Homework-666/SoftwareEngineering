@@ -57,7 +57,7 @@
                 </div>
                 <template #footer>
                     <span class="dialog-footer">
-                        <el-button type="primary" @click="centerDialogVisible = false;Cancel()">
+                        <el-button type="primary" @click="Cancel">
                             确定
                         </el-button>
                     </span>
@@ -265,7 +265,10 @@ const countDown = () => {
 const Cancel = () => {// eslint-disable-line no-unused-vars
     axios.get(cancel)
     router.push('/')
+    centerDialogVisible.value = false;
 }
+
+
 
 const Return = () => {
     axios.get(cancel)
