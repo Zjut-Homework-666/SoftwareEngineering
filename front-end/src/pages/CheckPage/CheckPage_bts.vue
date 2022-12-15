@@ -25,7 +25,7 @@
             <el-dialog v-model="centerDialogVisible" title="核验成功" width="45%" align-center>
                 <div class="dia">
                     <el-container>
-                        <el-header class="header">AIR TICKET</el-header>
+                        <el-header class="el-header">AIR TICKET</el-header>
                         <el-main>
                             <el-descriptions title="BOARDING PASS" direction="vertical" >
                                 <el-descriptions-item label="PASSANGER NAME">MURPHY</el-descriptions-item>
@@ -36,7 +36,7 @@
                                 <el-descriptions-item label="SEAT">21B</el-descriptions-item>
                             </el-descriptions>
                         </el-main>
-                        <el-footer class="footer">GATE CLOSES 30 MINUTES BEFORE DEPARTURE</el-footer>
+                        <el-footer class="el-footer">GATE CLOSES 30 MINUTES BEFORE DEPARTURE</el-footer>
                     </el-container>
                 </div>
                 <template #footer>
@@ -55,20 +55,20 @@
 .bt_ct {
     border-radius: 15px;
 }
-.header{
+.el-header{
     width: 100%;
     height: 0%;
-    padding-right: 600px;
+    padding-right: 300px;
     text-align: center;
     color:aliceblue;
     background-color: #1076a4;
     font-size: 30px;
     /* font-weight: bold */
 }
-.footer{
+.el-footer{
     width: 100%;
     height: 0%;
-    padding-left: 500px;
+    padding-left: 300px;
     text-align: center;
     color:aliceblue;
     background-color: #1076a4;

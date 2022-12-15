@@ -48,7 +48,7 @@
                 <el-col :span="21" >
                     <el-form-item id="priceSection">
                         <div class="priceSlider">
-                            <el-slider v-model="searchForm.price" range show-stops :max="10000" show-input/>
+                            <el-slider v-model="searchForm.price" range show-stops :max="1000" show-input/>
                         </div>
                         <el-input v-model="searchForm.price[0]" style="margin-left: 40px; width: 100px; " class="w-50 m-2"/>
                         <p style="margin-left: 20px;">~</p>
@@ -121,7 +121,6 @@
             title="座位选择"
             width="30%"
             :before-close="handleClose"
-            :open-delay="300"
     >
         <div ref="chartDom" style="width: 400px; height: 800px"></div>
         <template #footer>
@@ -145,7 +144,7 @@ import axios from 'axios';
 import { ElMessageBox, ElTable} from 'element-plus'
 import * as echarts from 'echarts';
 // import { useStore } from 'vuex' // 引入useStore 方法
-// import bus from '../../utils'
+import bus from '../../utils'
 
 interface flightDetailInfo {  // 机次信息
     flight: string  // 机次
@@ -170,7 +169,7 @@ const searchForm = reactive({
     flight: '',         // 航班
     departure: '',      // 出发地
     destination: '',    // 目的地
-    price: [0, 10000],   // 价格区间
+    price: [0, 1000],   // 价格区间
     date:''             // 日期
 })
 
@@ -198,13 +197,8 @@ const tableData = ref([
 const flag = ref(0);
 const dialogVisible = ref(false)
 let showPage = ref([])
-let seatInfo = ref([{
-    flight: '',  // 机次
-    seat: '',  // 座位
-    price: '',  // 价格
-    status: ''  // 状态
-}]);
-let selectedNames = ref(String);  // 选择的座位
+const seatInfo = ref([]);
+let selectedNames = ref([]);  // 选择的座位
 
 onMounted(() => {
     // 页面刷新时 默认请求空条件查询
@@ -247,16 +241,16 @@ const handleCurrentChange = () => {
     showPage.value = tableData.value.slice((currentPage.value-1)*pageSize.value, currentPage.value*pageSize.value);
 }
 
-const collectSeatInfo : any = async (flight) => {
+const collectSeatInfo = (flight) => {
     // 座位信息
-    await axios.get(proxy.$url+proxy.$BackendPort+"/seats", {
+    axios.get(proxy.$url+proxy.$BackendPort+"/seats", {
         params: {
             flight:flight,        // 直接指定航班
         }
     }).then(function (ret) {
-        // console.log('ret.data.seats:'+JSON.stringify(ret.data.seats))
-        seatInfo.value =  ret.data.seats;
-        // console.log('seatInfo.value:'+JSON.stringify(seatInfo.value))
+        console.log(ret.data)
+        seatInfo.value = ret.data.seats;
+        // TODO:接口未写好，无法显示座位
     });
 }
 
@@ -304,69 +298,27 @@ const handleSeatInfo = (seatInfo: seatDetailInfo[]) => {
             });
         }
     }
-    // console.log('seats:'+ JSON.stringify(seatInfo))
     return regions;
 }
 
 // 显示预定飞机座位图形
 const showChart = (rowData) => {
+    setTimeout(()=>{
 
-    type EChartsOption = echarts.EChartsOption;
-    var option: EChartsOption;
+        if(flag.value === 0) {
+            flightSeat = echarts.init(chartDom.value)
+        }
+        type EChartsOption = echarts.EChartsOption;
+        var option: EChartsOption;
 
-    if(flag.value === 1) {
-
-        option = {
-            tooltip: {},
-            geo: {
-                map: 'flight-seats',
-                roam: false,
-                selectedMode: 'single',
-                layoutCenter: ['30%', '50%'],
-                layoutSize: '200%',
-                tooltip: {
-                    show: true
-                },
-                itemStyle: {
-                    color: '#fff'
-                },
-                emphasis: {
-                    itemStyle: {
-                        color: undefined,
-                        borderColor: 'green',
-                        borderWidth: 2
-                    },
-                    label: {
-                        show: false
-                    }
-                },
-                select: {
-                    itemStyle: {
-                        color: 'green'
-                    },
-                    label: {
-                        show: false,
-                        textBorderColor: '#fff',
-                        textBorderWidth: 2
-                    }
-                },
-                regions: []
-            }
-        };
-
-        flightSeat.setOption(option);
-    }
-
-    setTimeout(async ()=>{
-
-        await collectSeatInfo(rowData.flight)
+        collectSeatInfo(rowData.flight)
 
         axios.get('./flight-seats.svg').then((ret) => {
-            if(flag.value === 0) {
-                flightSeat = echarts.init(chartDom.value)
+            // @ts-ignore
+            if(flag.value === 0){
+                flag.value = 1;
                 echarts.registerMap('flight-seats', { svg: ret.data });
             }
-
             option = {
                 tooltip: {},
                 geo: {
@@ -405,20 +357,23 @@ const showChart = (rowData) => {
                 }
             };
 
-            flightSeat.setOption(option, true);
+            flightSeat.setOption(option);
 
             // Get selected seats.
-            if(flag.value === 0){
-                flag.value = 1;
-                flightSeat.on('geoselectchanged', function (params: any) {
-                    selectedNames.value = params.allSelected[0].name[0];
-                    console.log('select', selectedNames.value);
-                });
-            }
+            flightSeat.on('geoselectchanged', function (params: any) {
+                selectedNames = params.allSelected[0].name.slice();
+
+                // Remove taken seats.   TODO:要改
+                for (var i = selectedNames.value.length - 1; i >= 0; i--) {
+                    if (seatInfo.value.indexOf(selectedNames.value[i]) >= 0) {
+                        selectedNames.value.splice(i, 1);
+                    }
+                }
+                console.log('selected', selectedNames.value);
+            });
         });
 
         option && flightSeat.setOption(option);
-
     },100)
 }
 
@@ -628,38 +583,42 @@ const tagCtrl = (value: string) => {
 
 // const store = useStore()
 
-
 const SchheduleButton = () =>{
     let config = {
         headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
     };
     let userInfo = {
-        name : '',
-        sex : '',
+        name : '李四',
+        sex : '男',
         phone : 1,
-        mail : '',
-        id : ''
+        mail : '1470603076@qq.com',
+        id : '123123123123123123'
     }
     let flightSeat = {
-        flight : '',
-        seat : 1
+        flight : 'P-5199',
+        seat : '2C'
     }
     let data = {
         userInfo,
         flightSeat
     }
-
+    console.log(selectedNames.value)
+    console.log('1')
     axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data,config)
         .then(function (ret) {
             console.log(ret.data)
             let payURL = ret.data.payUrl;
             let cancelURL = ret.data.cancelUrl;
             let orderId = ret.data.orderId;
-            console.log(payURL)
-            console.log(cancelURL)
             console.log(orderId)
             // bus.emit('GetPaymentInfo',)
-
+            let url = {
+                payURL:payURL,
+                cancelURL:cancelURL
+            }
+            // 带着订单编号跳转到付款界面 将两个链接放到bus中以订单编号为key
+            console.log('url')
+            console.log(url)
         })
 
     dialogVisible.value = false;
