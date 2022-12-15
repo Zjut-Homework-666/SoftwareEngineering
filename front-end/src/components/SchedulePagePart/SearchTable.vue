@@ -48,7 +48,7 @@
                 <el-col :span="21" >
                     <el-form-item id="priceSection">
                         <div class="priceSlider">
-                            <el-slider v-model="searchForm.price" range show-stops :max="1000" show-input/>
+                            <el-slider v-model="searchForm.price" range show-stops :max="10000" show-input/>
                         </div>
                         <el-input v-model="searchForm.price[0]" style="margin-left: 40px; width: 100px; " class="w-50 m-2"/>
                         <p style="margin-left: 20px;">~</p>
@@ -74,14 +74,14 @@
             <el-table-column prop="price" label="最低价格" width="120" sortable='custom'/>
             <el-table-column prop="seats" label="剩余座位" width="120" sortable='custom'/>
             <el-table-column prop="status" label="航班状态" width="100"
-                    :filters="[
+                             :filters="[
         { text: '售票中', value: '售票中' },
         { text: '未开售', value: '未开售' },
         { text: '停飞', value: '停飞' },
         { text: '已满', value: '已满' },
       ]"
-                    :filter-method="filterTag"
-                    filter-placement="bottom-end"
+                             :filter-method="filterTag"
+                             filter-placement="bottom-end"
             >
                 <template #default="scope">
                     <el-tag
@@ -121,6 +121,7 @@
             title="座位选择"
             width="30%"
             :before-close="handleClose"
+            :open-delay="300"
     >
         <div ref="chartDom" style="width: 400px; height: 800px"></div>
         <template #footer>
@@ -169,7 +170,7 @@ const searchForm = reactive({
     flight: '',         // 航班
     departure: '',      // 出发地
     destination: '',    // 目的地
-    price: [0, 1000],   // 价格区间
+    price: [0, 10000],   // 价格区间
     date:''             // 日期
 })
 
@@ -197,8 +198,13 @@ const tableData = ref([
 const flag = ref(0);
 const dialogVisible = ref(false)
 let showPage = ref([])
-const seatInfo = ref([]);
-let selectedNames = ref([]);  // 选择的座位
+let seatInfo = ref([{
+    flight: '',  // 机次
+    seat: '',  // 座位
+    price: '',  // 价格
+    status: ''  // 状态
+}]);
+let selectedNames = ref(String);  // 选择的座位
 
 onMounted(() => {
     // 页面刷新时 默认请求空条件查询
@@ -241,16 +247,16 @@ const handleCurrentChange = () => {
     showPage.value = tableData.value.slice((currentPage.value-1)*pageSize.value, currentPage.value*pageSize.value);
 }
 
-const collectSeatInfo = (flight) => {
+const collectSeatInfo : any = async (flight) => {
     // 座位信息
-    axios.get(proxy.$url+proxy.$BackendPort+"/seats", {
+    await axios.get(proxy.$url+proxy.$BackendPort+"/seats", {
         params: {
             flight:flight,        // 直接指定航班
         }
     }).then(function (ret) {
-        console.log(ret.data)
-        seatInfo.value = ret.data.seats;
-        // TODO:接口未写好，无法显示座位
+        // console.log('ret.data.seats:'+JSON.stringify(ret.data.seats))
+        seatInfo.value =  ret.data.seats;
+        // console.log('seatInfo.value:'+JSON.stringify(seatInfo.value))
     });
 }
 
@@ -298,14 +304,18 @@ const handleSeatInfo = (seatInfo: seatDetailInfo[]) => {
             });
         }
     }
+    // console.log('seats:'+ JSON.stringify(seatInfo))
     return regions;
 }
 
 // 显示预定飞机座位图形
 const showChart = (rowData) => {
+
     type EChartsOption = echarts.EChartsOption;
     var option: EChartsOption;
+
     if(flag.value === 1) {
+
         option = {
             tooltip: {},
             geo: {
@@ -343,15 +353,20 @@ const showChart = (rowData) => {
                 regions: []
             }
         };
+
         flightSeat.setOption(option);
     }
+
     setTimeout(async ()=>{
+
         await collectSeatInfo(rowData.flight)
+
         axios.get('./flight-seats.svg').then((ret) => {
             if(flag.value === 0) {
                 flightSeat = echarts.init(chartDom.value)
                 echarts.registerMap('flight-seats', { svg: ret.data });
             }
+
             option = {
                 tooltip: {},
                 geo: {
@@ -389,7 +404,9 @@ const showChart = (rowData) => {
                     regions: handleSeatInfo(seatInfo.value)
                 }
             };
+
             flightSeat.setOption(option, true);
+
             // Get selected seats.
             if(flag.value === 0){
                 flag.value = 1;
@@ -399,7 +416,9 @@ const showChart = (rowData) => {
                 });
             }
         });
+
         option && flightSeat.setOption(option);
+
     },100)
 }
 
@@ -609,43 +628,39 @@ const tagCtrl = (value: string) => {
 
 // const store = useStore()
 
+
 const SchheduleButton = () =>{
     let config = {
         headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
     };
     let userInfo = {
-        name : '李四',
-        sex : '男',
+        name : '',
+        sex : '',
         phone : 1,
-        mail : '1470603076@qq.com',
-        id : '123123123123123123'
+        mail : '',
+        id : ''
     }
     let flightSeat = {
-        flight : 'P-5199',
-        seat : '2C'
+        flight : '',
+        seat : 1
     }
     let data = {
         userInfo,
         flightSeat
     }
-    console.log(selectedNames.value)
 
     axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data,config)
-        .then(function (ret) {
-            console.log(ret.data)
-            let payURL = ret.data.payUrl;
-            let cancelURL = ret.data.cancelUrl;
-            let orderId = ret.data.orderId;
+            .then(function (ret) {
+                console.log(ret.data)
+                let payURL = ret.data.payUrl;
+                let cancelURL = ret.data.cancelUrl;
+                let orderId = ret.data.orderId;
+                console.log(payURL)
+                console.log(cancelURL)
+                console.log(orderId)
+                // bus.emit('GetPaymentInfo',)
 
-            let url = {
-                payURL:payURL,
-                cancelURL:cancelURL
-            }
-            // TODO:带着订单编号跳转到付款界面 将两个链接放到bus中以订单编号为key
-            // bus.emit('GetPaymentInfo',)
-            console.log(orderId)
-            console.log(url)
-        })
+            })
 
     dialogVisible.value = false;
 }
