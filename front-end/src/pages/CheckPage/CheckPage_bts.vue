@@ -20,18 +20,18 @@
             <el-dialog v-model="centerDialogVisible" title="核验成功" width="45%" align-center>
                 <div class="dia">
                     <el-container>
-                        <el-header class="el-header">AIR TICKET</el-header>
+                        <el-header class="el-header">机票</el-header>
                         <el-main>
-                            <el-descriptions title="BOARDING PASS" direction="vertical" :column="4" >
-                                <el-descriptions-item label="PASSANGER NAME">{{ name }}</el-descriptions-item>
-                                <el-descriptions-item label="FROM/TO">{{ flightInfo.depPlace }}/{{ flightInfo.arrPlace }}</el-descriptions-item>
-                                <el-descriptions-item label="BOARING TIME">{{ flightInfo.depTime }}</el-descriptions-item>
-                                <el-descriptions-item label="ARRIVAL TIME">{{ flightInfo.arrTime }}</el-descriptions-item>
-                                <el-descriptions-item label="FLIGHT NO.">{{ flightInfo.flight }}</el-descriptions-item>
-                                <el-descriptions-item label="SEAT">{{ flightInfo.seat }}</el-descriptions-item>
+                            <el-descriptions title="登机凭证" direction="vertical" :column="4" >
+                                <el-descriptions-item label="乘客姓名">{{ name }}</el-descriptions-item>
+                                <el-descriptions-item label="出发/到达">{{ flightInfo.depPlace }}/{{ flightInfo.arrPlace }}</el-descriptions-item>
+                                <el-descriptions-item label="登机时间">{{ flightInfo.depTime }}</el-descriptions-item>
+                                <el-descriptions-item label="到达时间">{{ flightInfo.arrTime }}</el-descriptions-item>
+                                <el-descriptions-item label="航班编号">{{ flightInfo.flight }}</el-descriptions-item>
+                                <el-descriptions-item label="座位号">{{ flightInfo.seat }}</el-descriptions-item>
                             </el-descriptions>
                         </el-main>
-                        <el-footer class="el-footer">GATE CLOSES 30 MINUTES BEFORE DEPARTURE</el-footer>
+                        <el-footer class="el-footer">通道将在起飞前30分钟关闭</el-footer>
                     </el-container>
                 </div>
                 <template #footer>

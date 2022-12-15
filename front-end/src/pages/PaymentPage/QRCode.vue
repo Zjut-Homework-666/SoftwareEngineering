@@ -15,42 +15,42 @@
                     <el-container>
                         <el-header>
                             <el-descriptions
-                            title="FLIGHT INFOMATION"
+                            title="航班信息"
                             direction="vertical"
                             :column="3"
                             :size="size"
                             >
-                                <el-descriptions-item label="FLIGHT NO.">{{ flightInfo.flight }}</el-descriptions-item>
-                                <el-descriptions-item label="FROM/TO">{{ flightInfo.depPlace }}/{{ flightInfo.arrPlace }}</el-descriptions-item>
-                                <el-descriptions-item label="DEPARTUR TIME">{{ flightInfo.depTime }}</el-descriptions-item>
-                                <el-descriptions-item label="ARRIVAL TIME">{{ flightInfo.arrTime }}</el-descriptions-item>
-                                <el-descriptions-item label="SEAT">{{  flightInfo.seat  }}</el-descriptions-item>
+                                <el-descriptions-item label="航班编号">{{ flightInfo.flight }}</el-descriptions-item>
+                                <el-descriptions-item label="出发/到达">{{ flightInfo.depPlace }}/{{ flightInfo.arrPlace }}</el-descriptions-item>
+                                <el-descriptions-item label="起飞时间">{{ flightInfo.depTime }}</el-descriptions-item>
+                                <el-descriptions-item label="到达时间">{{ flightInfo.arrTime }}</el-descriptions-item>
+                                <el-descriptions-item label="座位号">{{  flightInfo.seat  }}</el-descriptions-item>
                             </el-descriptions>
                             <el-descriptions
-                            title="USER INFOMATION"
+                            title="用户信息"
                             :column="4"
                             :size="size"
                             direction="vertical"
                             :style="blockMargin"
                             border
                             >
-                            <el-descriptions-item label="USERNAME">{{  userInfo.name  }}</el-descriptions-item>
-                            <el-descriptions-item label="TELEPHONE">{{ userInfo.phone }}</el-descriptions-item>
-                            <el-descriptions-item label="ID NUMBER">{{ userInfo.id }}</el-descriptions-item>
-                            <el-descriptions-item label="E-MAIL">{{ userInfo.mail }}</el-descriptions-item>
+                            <el-descriptions-item label="姓名">{{  userInfo.name  }}</el-descriptions-item>
+                            <el-descriptions-item label="电话号码">{{ userInfo.phone }}</el-descriptions-item>
+                            <el-descriptions-item label="身份证号">{{ userInfo.id }}</el-descriptions-item>
+                            <el-descriptions-item label="邮箱">{{ userInfo.mail }}</el-descriptions-item>
                             </el-descriptions>
                             <el-descriptions
-                            title="ORDER INFOMATION"
+                            title="订单信息"
                             :column="4"
                             :size="size"
                             direction="vertical"
                             :style="blockMargin"
                             border
                             >
-                            <el-descriptions-item label="ORDER TIME">{{  orderInfo.orderTime  }}</el-descriptions-item>
-                            <el-descriptions-item label="PRICE">{{  orderInfo.price  }}</el-descriptions-item>
-                            <el-descriptions-item label="ORDER ID">{{ orderInfo.orderId }}</el-descriptions-item>
-                            <el-descriptions-item label="ORDER STATUS">{{  orderInfo.orderStatus  }}</el-descriptions-item>
+                            <el-descriptions-item label="生成时间">{{  orderInfo.orderTime  }}</el-descriptions-item>
+                            <el-descriptions-item label="价格">{{  orderInfo.price  }}</el-descriptions-item>
+                            <el-descriptions-item label="订单编号">{{ orderInfo.orderId }}</el-descriptions-item>
+                            <el-descriptions-item label="订单状态">{{  orderInfo.orderStatus  }}</el-descriptions-item>
                             </el-descriptions>
                         </el-header>
                     </el-container>
