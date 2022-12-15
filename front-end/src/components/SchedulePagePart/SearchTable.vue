@@ -48,7 +48,7 @@
                 <el-col :span="21" >
                     <el-form-item id="priceSection">
                         <div class="priceSlider">
-                            <el-slider v-model="searchForm.price" range show-stops :max="10000" show-input/>
+                            <el-slider v-model="searchForm.price" range show-stops :max="1000" show-input/>
                         </div>
                         <el-input v-model="searchForm.price[0]" style="margin-left: 40px; width: 100px; " class="w-50 m-2"/>
                         <p style="margin-left: 20px;">~</p>
@@ -120,7 +120,6 @@
             v-model="dialogVisible"
             title="座位选择"
             width="30%"
-            :before-close="handleClose"
             :open-delay="300"
     >
         <div ref="chartDom" style="width: 400px; height: 800px"></div>
@@ -142,7 +141,7 @@
 import {ref, reactive, getCurrentInstance, onMounted} from 'vue'
 // import Qs from 'qs'
 import axios from 'axios';
-import { ElMessageBox, ElTable} from 'element-plus'
+import { ElTable, type TableColumnCtx} from 'element-plus'
 import * as echarts from 'echarts';
 // import { useStore } from 'vuex' // 引入useStore 方法
 // import bus from '../../utils'
@@ -467,18 +466,22 @@ const submitSearchForm = () => {
 
 // 预定操作
 
-const handleClose = (done: () => void) => {
-    ElMessageBox.confirm('确认关闭?')
-            .then(() => {
-                done()
-            })
-            .catch(() => {
-                // catch error
-            })
-}
+// const handleClose = (done: () => void) => {
+//     ElMessageBox.confirm('确认关闭?')
+//             .then(() => {
+//                 done()
+//             })
+//             .catch(() => {
+//                 // catch error
+//             })
+// }
 
-const filterTag = () => {
-
+const filterTag = (value: string,
+                   row: flightDetailInfo,
+                   column: TableColumnCtx<flightDetailInfo>
+) => {
+    const property = column['property']
+    return row[property] === value
 }
 
 // 表格排序、过滤、标签过滤
