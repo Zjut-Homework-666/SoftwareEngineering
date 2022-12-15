@@ -34,8 +34,10 @@
                 <div class="block">
                     <el-date-picker
                             v-model="searchForm.date"
-                            type="date"
-                            placeholder="选择日期"
+                            format='YYYY-MM-DD'
+                            value-format="YYYY-MM-DD"
+                            type='date'
+                            placeholder='选择日期'
                             style="width: 200px"
                     />
                 </div>
@@ -145,6 +147,7 @@ import { ElTable, type TableColumnCtx} from 'element-plus'
 import * as echarts from 'echarts';
 // import { useStore } from 'vuex' // 引入useStore 方法
 // import bus from '../../utils'
+// import jutils from '../../../node_modules/jutils'
 
 interface flightDetailInfo {  // 机次信息
     flight: string  // 机次
@@ -423,15 +426,10 @@ const showChart = (rowData) => {
 
 // 查询按钮
 const submitSearchForm = () => {
-    console.log('submit!')
-    // console.log(searchForm.flight)
-    // console.log(searchForm.departure)
-    // console.log(searchForm.destination)
-    // console.log(searchForm.price[0])
-    // console.log(searchForm.price[1])
-    // console.log(searchForm.date)
     console.log(tableData.value)
-
+    // var date = jutils.formatDate(new Date(1562672641*1000),"YYYY-MM-DD")
+    console.log(searchForm.date)
+    // var date2=date.Format("yyyy-MM-dd hh:mm:ss");
     axios.get(proxy.$url+proxy.$BackendPort+"/flights",{
         params:{
             flight:searchForm.flight,        // 直接指定航班
@@ -632,20 +630,20 @@ const tagCtrl = (value: string) => {
 // const store = useStore()
 
 
-const SchheduleButton = () =>{
+const SchheduleButton = (rowData) =>{
     let config = {
         headers: { 'Content-Type': "multipart/json, charset=UTF-8" }
     };
     let userInfo = {
-        name : '',
-        sex : '',
-        phone : 1,
-        mail : '',
-        id : ''
+        name : '王五',
+        sex : '女',
+        phone : 11231231231,
+        mail : '1470603076@qq.com',
+        id : '12312312312312312'
     }
     let flightSeat = {
-        flight : '',
-        seat : 1
+        flight : rowData.flight,
+        seat : selectedNames.value[1]
     }
     let data = {
         userInfo,
@@ -661,7 +659,10 @@ const SchheduleButton = () =>{
                 console.log(payURL)
                 console.log(cancelURL)
                 console.log(orderId)
+
+                // let
                 // bus.emit('GetPaymentInfo',)
+                // todo: 以订单号为key跳转到付款界面 读取放到bus中的链接
 
             })
 
