@@ -10,25 +10,50 @@
                     <span>取消</span>
                 </el-button>
             </el-form-item>
-            <el-dialog v-model="centerDialogVisible" title="付款成功" width="30%" align-center>
+            <el-dialog v-model="centerDialogVisible" title="付款成功" width="50%" align-center>
                 <div class="dia">
-                    <el-form class="dia_form">
-                    <el-form-item class="dia_row" label-width="75" label="姓名:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="性别:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="身份证号:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="电话号码:">
-                        XXXXXX
-                    </el-form-item>
-                    <el-form-item class="dia_row" label-width="75" label="订单编号:">
-                        XXXXXX
-                    </el-form-item>
-                    </el-form>
+                    <el-container>
+                        <el-header>
+                            <el-descriptions
+                            title="FLIGHT INFOMATION"
+                            direction="vertical"
+                            :column="3"
+                            :size="size"
+                            >
+                                <el-descriptions-item label="FLIGHT NO.">HK8456</el-descriptions-item>
+                                <el-descriptions-item label="FROM/TO">杭州/广州</el-descriptions-item>
+                                <el-descriptions-item label="DEPARTUR TIME">15:30</el-descriptions-item>
+                                <el-descriptions-item label="ARRIVAL TIME">18:00</el-descriptions-item>
+                                <el-descriptions-item label="SEAT">C51</el-descriptions-item>
+                            </el-descriptions>
+                            <el-descriptions
+                            title="USER INFOMATION"
+                            :column="4"
+                            :size="size"
+                            direction="vertical"
+                            :style="blockMargin"
+                            border
+                            >
+                            <el-descriptions-item label="USERNAME">Murphy</el-descriptions-item>
+                            <el-descriptions-item label="TELEPHONE">15833213569</el-descriptions-item>
+                            <el-descriptions-item label="ID NUMBER">130181200203304514</el-descriptions-item>
+                            <el-descriptions-item label="E-MAIL">2280269097@qq.com</el-descriptions-item>
+                            </el-descriptions>
+                            <el-descriptions
+                            title="ORDER INFOMATION"
+                            :column="4"
+                            :size="size"
+                            direction="vertical"
+                            :style="blockMargin"
+                            border
+                            >
+                            <el-descriptions-item label="ORDER TIME">18:06</el-descriptions-item>
+                            <el-descriptions-item label="PRICE">599</el-descriptions-item>
+                            <el-descriptions-item label="ORDER ID">8918918918925168</el-descriptions-item>
+                            <el-descriptions-item label="ORDER STATUS">PAYED</el-descriptions-item>
+                            </el-descriptions>
+                        </el-header>
+                    </el-container>
                 </div>
                 <template #footer>
                     <span class="dialog-footer">
@@ -48,7 +73,7 @@
   vertical-align: middle;
 }
 .dia {
-    height: 230px;
+    height: 420px;
     overflow: auto;
 }
 .dialog-footer{
@@ -174,7 +199,7 @@ const countDown = () => {
     // count = '14:59'
 }
 
-const Cancel = () => {
+const Cancel = () => {// eslint-disable-line no-unused-vars
     axios.get(cancel)
     router.push('/')
 }

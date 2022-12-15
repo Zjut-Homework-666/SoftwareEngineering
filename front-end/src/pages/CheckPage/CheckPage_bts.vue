@@ -27,12 +27,13 @@
                     <el-container>
                         <el-header class="el-header">AIR TICKET</el-header>
                         <el-main>
-                            <el-descriptions title="BOARDING PASS" direction="vertical" >
+                            <el-descriptions title="BOARDING PASS" direction="vertical" :column="4" >
                                 <el-descriptions-item label="PASSANGER NAME">MURPHY</el-descriptions-item>
                                 <el-descriptions-item label="DATE">2022.12.13</el-descriptions-item>
-                                <el-descriptions-item label="BOARING TIME">10:30</el-descriptions-item>
-                                <el-descriptions-item label="FLIGHT NO.">LJ6581</el-descriptions-item>
                                 <el-descriptions-item label="FROM/TO">杭州/北京</el-descriptions-item>
+                                <el-descriptions-item label="BOARING TIME">10:30</el-descriptions-item>
+                                <el-descriptions-item label="ARRIVAL TIME">12:30</el-descriptions-item>
+                                <el-descriptions-item label="FLIGHT NO.">LJ6581</el-descriptions-item>
                                 <el-descriptions-item label="SEAT">21B</el-descriptions-item>
                             </el-descriptions>
                         </el-main>
