@@ -108,7 +108,42 @@
                 width="30%"
                 :open-delay="300"
         >
-            <div ref="chartDom" style="width: 400px; height: 800px"></div>
+            <div style="display: flex">
+                <div ref="chartDom" style="width: 400px; height: 800px"></div>
+                <div style="position: absolute;margin-left: 250px">
+                    <el-card shadow="always" style="width: 250px;margin-top: 40px;gap: 10px">
+                        <p class="title" style="font-size: 17px">当前机次信息</p>
+                        <p class="title" style="font-size: 14px">机次: {{ flightSelect }}</p>
+                        <p class="title" style="font-size: 14px">座位: {{ selectedNames }}</p>
+                    </el-card>
+                    <el-form id="reserveForm" label-position="left" label-width="70px">
+                        <p class="title" style="margin-top: 40px;font-size: 17px">预定信息</p>
+                        <el-form-item label="姓名">
+                            <el-input v-model="userInfo.name" placeholder="请输入姓名" clearable></el-input>
+                        </el-form-item>
+                        <el-form-item label="性别">
+                            <el-select v-model="userInfo.sex" placeholder="请选择性别" clearable>
+                                <el-option
+                                        v-for="item in sexOption"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value"
+                                        style="padding-left: 10px"
+                                />
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="身份证号">
+                            <el-input v-model="userInfo.id" placeholder="请输入身份证号" clearable></el-input>
+                        </el-form-item>
+                        <el-form-item label="手机号">
+                            <el-input v-model="userInfo.phone" placeholder="请输入手机号" clearable></el-input>
+                        </el-form-item>
+                        <el-form-item label="邮箱">
+                            <el-input v-model="userInfo.mail" placeholder="请输入邮箱" clearable></el-input>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </div>
             <template #footer>
               <span class="dialog-footer">
                 <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
@@ -178,6 +213,13 @@ const searchForm = reactive({
 
 const proxy :any = getCurrentInstance().appContext.config.globalProperties
 
+const sexOption = [{
+    value: '男',
+    label: '男',
+},{
+    value: '女',
+    label: '女',
+}]
 let flightSeat = reactive<any>({});
 const chartDom = ref();
 const tableRef = ref<InstanceType<typeof ElTable>>()
@@ -206,8 +248,16 @@ let seatInfo = ref([{
     price: '',  // 价格
     status: ''  // 状态
 }]);
+
+let userInfo = ref({
+    id: '',
+    mail: '',
+    name: '',
+    phone: '',
+    sex: ''
+})
 const flightSelect = ref('')
-let selectedNames = ref(String);  // 选择的座位
+let selectedNames = ref('未选择');  // 选择的座位
 
 onMounted(() => {
     // 页面刷新时 默认请求空条件查询
@@ -636,19 +686,19 @@ const tagCtrl = (value: string) => {
 
 const SchheduleButton = () =>{
     console.log(flightSelect.value)
-    let userInfo = {
-        name : 'zz五',
-        sex : '女',
-        phone : 11231231231,
-        mail : '1470603076@qq.com',
-        id : '12312312312312312'
+    let reserveInfo = {
+        name : userInfo.value.name,
+        sex : userInfo.value.sex,
+        phone : userInfo.value.phone,
+        mail : userInfo.value.mail,
+        id : userInfo.value.id
     }
     let flightSeat = {
         flight : flightSelect.value,
         seat : selectedNames.value
     }
     let data = {
-        userInfo,
+        reserveInfo,
         flightSeat
     }
 
@@ -657,10 +707,10 @@ const SchheduleButton = () =>{
         payUrl:'',
         cancelUrl:''
     }
-    console.log(data)
+    console.log('send:', data)
     axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data)
             .then(function (ret) {
-                console.log(ret.data)
+                console.log('ret:', ret.data)
                 Res.payUrl = ret.data.payUrl;
                 Res.cancelUrl = ret.data.cancelUrl;
                 Res.OrderId = ret.data.orderId;
@@ -723,6 +773,14 @@ const SchheduleButton = () =>{
     display: flex;
     justify-content: left;
     flex-flow: column;
+}
+
+#reserveForm {
+    width: 250px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .priceSlider {
