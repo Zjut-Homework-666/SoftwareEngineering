@@ -119,10 +119,10 @@
                     <el-form id="reserveForm" label-position="left" label-width="70px">
                         <p class="title" style="margin-top: 40px;font-size: 17px">预定信息</p>
                         <el-form-item label="姓名">
-                            <el-input v-model="userInfo.name" placeholder="请输入姓名" clearable></el-input>
+                            <el-input v-model="UserInfo.name" placeholder="请输入姓名" clearable></el-input>
                         </el-form-item>
                         <el-form-item label="性别">
-                            <el-select v-model="userInfo.sex" placeholder="请选择性别" clearable>
+                            <el-select v-model="UserInfo.sex" placeholder="请选择性别" clearable>
                                 <el-option
                                         v-for="item in sexOption"
                                         :key="item.value"
@@ -133,13 +133,13 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item label="身份证号">
-                            <el-input v-model="userInfo.id" placeholder="请输入身份证号" clearable></el-input>
+                            <el-input v-model="UserInfo.id" placeholder="请输入身份证号" clearable></el-input>
                         </el-form-item>
                         <el-form-item label="手机号">
-                            <el-input v-model="userInfo.phone" placeholder="请输入手机号" clearable></el-input>
+                            <el-input v-model="UserInfo.phone" placeholder="请输入手机号" clearable></el-input>
                         </el-form-item>
                         <el-form-item label="邮箱">
-                            <el-input v-model="userInfo.mail" placeholder="请输入邮箱" clearable></el-input>
+                            <el-input v-model="UserInfo.mail" placeholder="请输入邮箱" clearable></el-input>
                         </el-form-item>
                     </el-form>
                 </div>
@@ -249,7 +249,7 @@ let seatInfo = ref([{
     status: ''  // 状态
 }]);
 
-let userInfo = ref({
+let UserInfo = ref({
     id: '',
     mail: '',
     name: '',
@@ -514,17 +514,6 @@ const submitSearchForm = () => {
     })
 }
 
-// 预定操作
-
-// const handleClose = (done: () => void) => {
-//     ElMessageBox.confirm('确认关闭?')
-//             .then(() => {
-//                 done()
-//             })
-//             .catch(() => {
-//                 // catch error
-//             })
-// }
 
 const filterTag = (value: string,
                    row: flightDetailInfo,
@@ -685,20 +674,20 @@ const tagCtrl = (value: string) => {
 // import bus from '../../utils'
 
 const SchheduleButton = () =>{
-    console.log(flightSelect.value)
-    let reserveInfo = {
-        name : userInfo.value.name,
-        sex : userInfo.value.sex,
-        phone : userInfo.value.phone,
-        mail : userInfo.value.mail,
-        id : userInfo.value.id
+    // console.log(flightSelect.value)
+    let userInfo = {
+        name : UserInfo.value.name,
+        sex : UserInfo.value.sex,
+        phone : parseInt(UserInfo.value.phone),
+        mail : UserInfo.value.mail,
+        id : UserInfo.value.id
     }
     let flightSeat = {
         flight : flightSelect.value,
         seat : selectedNames.value
     }
     let data = {
-        reserveInfo,
+        userInfo,
         flightSeat
     }
 
