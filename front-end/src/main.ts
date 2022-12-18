@@ -1,4 +1,4 @@
-import {createApp, getCurrentInstance} from 'vue'
+import {createApp} from 'vue'
 import ElementPlus from 'element-plus';
 import 'element-plus/theme-chalk/index.css'
 import * as echarts from 'echarts'
@@ -15,7 +15,7 @@ const app = createApp(App)
 
 // 全局方法挂载全局变量
 app.config.globalProperties.$BackendPort = "8089";
-app.config.globalProperties.$url = "http://localhost:";
+app.config.globalProperties.$url = "http://121.5.157.39:";
 //调用方法
 // const proxy :any = getCurrentInstance().appContext.config.globalProperties
 app.use(router)
@@ -23,7 +23,6 @@ app.use(router)
 app.use(ElementPlus)
 app.config.globalProperties.$echarts = echarts
 app.config.globalProperties.$axios = axios
-
 
 
 // 将 store 实例作为插件安装
