@@ -2,13 +2,20 @@
 <template #default="scope">
 
     <div id="conditionArea">
-        <el-form id="searchForm" :inline="true" :model="searchForm" class="demo-form-inline">
+        <el-form
+                id="searchForm"
+                :inline="true"
+                :model="searchForm"
+                ref="searchFormRef"
+                class="demo-form-inline"
+                :rules="searchFormRules"
+        >
             <el-row>
                 <el-col :span="2">
                     <p class="formLabel">航班号</p>
                 </el-col>
                 <el-col :span="3">
-                    <el-form-item id="flightNoInput">
+                    <el-form-item id="flightNoInput" prop="flight">
                         <el-input style="width: 200px" v-model="searchForm.flight" placeholder="航班号" />
                     </el-form-item>
                 </el-col>
@@ -19,11 +26,15 @@
                     <p class="formLabel">航班始末</p>
                 </el-col>
                 <el-col :span="20">
-                    <el-form-item id="destination">
-                        <el-input style="width: 200px" v-model="searchForm.departure" placeholder="出发地" />
-                        <p style="margin: auto 20px">飞往</p>
-                        <el-input style="width: 200px" v-model="searchForm.destination" placeholder="目的地" />
-                    </el-form-item>
+                    <div id="destination">
+                        <el-form-item prop="departure">
+                            <el-input style="width: 200px" v-model="searchForm.departure" placeholder="出发地" />
+                        </el-form-item>
+                        <p style="margin-right: 40px">飞往</p>
+                        <el-form-item prop="destination">
+                            <el-input style="width: 200px" v-model="searchForm.destination" placeholder="目的地" />
+                        </el-form-item>
+                    </div>
                 </el-col>
             </el-row>
 
@@ -32,14 +43,16 @@
                     <p class="formLabel">日期</p>
                 </el-col>
                 <div class="block">
-                    <el-date-picker
-                            v-model="searchForm.date"
-                            format='YYYY-MM-DD'
-                            value-format="YYYY-MM-DD"
-                            type='date'
-                            placeholder='选择日期'
-                            style="width: 200px"
-                    />
+                    <el-form-item prop="date">
+                        <el-date-picker
+                                v-model="searchForm.date"
+                                format='YYYY-MM-DD'
+                                value-format="YYYY-MM-DD"
+                                type='date'
+                                placeholder='选择日期'
+                                style="width: 200px"
+                        />
+                    </el-form-item>
                 </div>
             </el-row>
 
@@ -48,7 +61,7 @@
                     <p class="formLabel">价格区间</p>
                 </el-col>
                 <el-col :span="21" >
-                    <el-form-item id="priceSection">
+                    <el-form-item id="priceSection" prop="price">
                         <div class="priceSlider">
                             <el-slider v-model="searchForm.price" range show-stops :max="1000" show-input/>
                         </div>
@@ -105,8 +118,10 @@
         <el-dialog
                 v-model="dialogVisible"
                 title="座位选择"
-                width="30%"
+
                 :open-delay="300"
+                :before-close="clrForm"
+                style="width: 600px"
         >
             <div style="display: flex">
                 <div ref="chartDom" style="width: 400px; height: 800px"></div>
@@ -116,12 +131,20 @@
                         <p class="title" style="font-size: 14px">机次: {{ flightSelect }}</p>
                         <p class="title" style="font-size: 14px">座位: {{ selectedNames }}</p>
                     </el-card>
-                    <el-form id="reserveForm" label-position="left" label-width="70px">
+                    <el-form
+                            id="reserveForm"
+                            label-position="left"
+                            label-width="70px"
+                            :rules="addFormRules"
+                            ref="ruleFormRef"
+                            :model="UserInfo"
+                            status-icon
+                    >
                         <p class="title" style="margin-top: 40px;font-size: 17px">预定信息</p>
-                        <el-form-item label="姓名">
+                        <el-form-item prop="name" label="姓名" label-width="80px">
                             <el-input v-model="UserInfo.name" placeholder="请输入姓名" clearable></el-input>
                         </el-form-item>
-                        <el-form-item label="性别">
+                        <el-form-item prop="sex" label="性别" label-width="80px">
                             <el-select v-model="UserInfo.sex" placeholder="请选择性别" clearable>
                                 <el-option
                                         v-for="item in sexOption"
@@ -132,28 +155,26 @@
                                 />
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="身份证号">
+                        <el-form-item prop="id" label="身份证号" label-width="80px">
                             <el-input v-model="UserInfo.id" placeholder="请输入身份证号" clearable></el-input>
                         </el-form-item>
-                        <el-form-item label="手机号">
-                            <el-input v-model="UserInfo.phone" placeholder="请输入手机号" clearable></el-input>
+                        <el-form-item prop="phone" label="手机号" label-width="80px">
+                            <el-input v-model.number="UserInfo.phone" placeholder="请输入手机号" clearable></el-input>
                         </el-form-item>
-                        <el-form-item label="邮箱">
+                        <el-form-item prop="mail" label="邮箱" label-width="80px">
                             <el-input v-model="UserInfo.mail" placeholder="请输入邮箱" clearable></el-input>
                         </el-form-item>
                     </el-form>
                 </div>
             </div>
-            <template #footer>
-              <span class="dialog-footer">
-                <el-button @click="dialogVisible = false" style="width: 100px;height: 40px;">
+            <span style="width: 400px;margin-left: 230px">
+                <el-button @click="dialogVisible = false;clrForm()" style="width: 100px;height: 40px;">
                     取消
                 </el-button>
-                <el-button type="primary" @click="SchheduleButton()" style="width: 100px;height: 40px;">
+                <el-button type="primary" @click="SchheduleButton(ruleFormRef)" style="width: 100px;height: 40px;">
                     确定
                 </el-button>
               </span>
-            </template>
         </el-dialog>
         <div id="pagination">
             <el-pagination
@@ -179,10 +200,41 @@
 import {ref, reactive, getCurrentInstance, onMounted} from 'vue'
 // import Qs from 'qs'
 import axios from 'axios';
-import {ElMessageBox, ElTable, type TableColumnCtx} from 'element-plus'
+import {ElMessageBox, ElTable, type TableColumnCtx, FormRules, FormInstance } from 'element-plus'
 import * as echarts from 'echarts';
 // import jutils from '../../../node_modules/jutils'
 import router from '../../router'
+
+onMounted(() => {
+    // 页面刷新时 默认请求空条件查询
+    axios.get(proxy.$url+proxy.$BackendPort+"/flights", {
+        params: {
+            flight:'',        // 直接指定航班
+            depPlace:'',    // 出发地（关键词匹配）
+            arrPlace:'',   // 到达地（关键词匹配）
+            minPrice:0,    // 选择的最低价格
+            maxPrice:1000,    // 选择的最高价格   不能不填！！
+            date:'',            // 选择的时间
+        }
+    }).then(function (ret) {
+        // console.log(ret.data)
+        tableData.value = []
+        for(var i=0;i<ret.data.flights.length;i++){
+            let tempflight : flightDetailInfo = {
+                flight : ret.data.flights[i].flight,  // 机次
+                arrPlace : ret.data.flights[i].arrPlace,  // 到达地
+                depPlace : ret.data.flights[i].depPlace,  // 出发地
+                depTime : ret.data.flights[i].depTime,  // 起飞时间
+                arrTime : ret.data.flights[i].arrTime,  // 到达时间
+                price : ret.data.flights[i].lowestPrice,  // 最低价格
+                seats : ret.data.flights[i].seatLeft,  // 剩余座位
+                status : ret.data.flights[i].status  // 状态
+            }
+            tableData.value.push(tempflight)
+        }
+        showPage.value = tableData.value.slice(0, pageSize.value);
+    });
+})
 
 interface flightDetailInfo {  // 机次信息
     flight: string  // 机次
@@ -203,6 +255,8 @@ interface seatDetailInfo {
 }
 
 // 查询表单
+const ruleFormRef = ref<FormInstance>()
+const searchFormRef = ref<FormInstance>()
 const searchForm = reactive({
     flight: '',         // 航班
     departure: '',      // 出发地
@@ -253,42 +307,20 @@ let UserInfo = ref({
     id: '',
     mail: '',
     name: '',
-    phone: '',
+    phone: null,
     sex: ''
 })
 const flightSelect = ref('')
 let selectedNames = ref('未选择');  // 选择的座位
 
-onMounted(() => {
-    // 页面刷新时 默认请求空条件查询
-    axios.get(proxy.$url+proxy.$BackendPort+"/flights", {
-        params: {
-            flight:'',        // 直接指定航班
-            depPlace:'',    // 出发地（关键词匹配）
-            arrPlace:'',   // 到达地（关键词匹配）
-            minPrice:0,    // 选择的最低价格
-            maxPrice:1000,    // 选择的最高价格   不能不填！！
-            date:'',            // 选择的时间
-        }
-    }).then(function (ret) {
-        // console.log(ret.data)
-        tableData.value = []
-        for(var i=0;i<ret.data.flights.length;i++){
-            let tempflight : flightDetailInfo = {
-                flight : ret.data.flights[i].flight,  // 机次
-                arrPlace : ret.data.flights[i].arrPlace,  // 到达地
-                depPlace : ret.data.flights[i].depPlace,  // 出发地
-                depTime : ret.data.flights[i].depTime,  // 起飞时间
-                arrTime : ret.data.flights[i].arrTime,  // 到达时间
-                price : ret.data.flights[i].lowestPrice,  // 最低价格
-                seats : ret.data.flights[i].seatLeft,  // 剩余座位
-                status : ret.data.flights[i].status  // 状态
-            }
-            tableData.value.push(tempflight)
-        }
-        showPage.value = tableData.value.slice(0, pageSize.value);
-    });
-})
+
+
+const clrForm = () => {
+    if (!ruleFormRef.value) return
+    dialogVisible.value = false;
+    ruleFormRef.value.resetFields();
+}
+
 
 // 显示数据
 // 每页条数控制
@@ -660,6 +692,69 @@ const priceAscSort = (a, b) => {
     }
 }
 
+// 添加表单的验证规则对象
+const searchFormRules = reactive<FormRules>({
+})
+
+const addFormRules = reactive<FormRules>({
+    name: [
+        {
+            required: true,
+            message: '请输入姓名',
+            trigger: 'blur'
+        },
+        {
+            min: 2,
+            max: 20,
+            message: '用户名的长度在 2 - 20个字符之间',
+            trigger: 'blur'
+        }
+    ],
+    id: [
+        {
+            required: true,
+            message: '请输入身份证号码',
+            trigger: 'blur'
+        },
+        {
+            min: 19,
+            max: 19,
+            message: '请输入19位身份证号',
+            trigger: 'blur'
+        }
+    ],
+    mail: [
+        {
+            required: true,
+            message: '请输入邮箱',
+            trigger: 'blur'
+        },
+        {
+            type: 'email',
+            message: '请输入正确格式的邮箱'
+        },
+    ],
+    sex: [
+        {
+            required: true,
+            message: '请选择性别',
+            trigger: 'blur'
+        }
+    ],
+    phone: [
+        {
+            required: true,
+            message: '请输入手机号',
+            trigger: 'blur'
+        },
+        {
+            type: 'number',
+            message: '手机号应只含数字'
+        },
+    ]
+})
+
+
 // 标签
 const tagCtrl = (value: string) => {
     if (value == '售票中') return 'success';
@@ -673,56 +768,63 @@ const tagCtrl = (value: string) => {
 // const store = useStore()/
 // import bus from '../../utils'
 
-const SchheduleButton = () =>{
-    // console.log(flightSelect.value)
-    let userInfo = {
-        name : UserInfo.value.name,
-        sex : UserInfo.value.sex,
-        phone : parseInt(UserInfo.value.phone),
-        mail : UserInfo.value.mail,
-        id : UserInfo.value.id
-    }
-    let flightSeat = {
-        flight : flightSelect.value,
-        seat : selectedNames.value
-    }
-    let data = {
-        userInfo,
-        flightSeat
-    }
+const SchheduleButton = async (formEl: FormInstance | undefined) => {
+    if (!formEl) return
+    await formEl.validate((valid, fields) => {
+        if (valid) {
+            console.log('提交成功!')
+            // console.log(flightSelect.value)
+            let userInfo = {
+                name : UserInfo.value.name,
+                sex : UserInfo.value.sex,
+                phone : UserInfo.value.phone,
+                mail : UserInfo.value.mail,
+                id : UserInfo.value.id
+            }
+            let flightSeat = {
+                flight : flightSelect.value,
+                seat : selectedNames.value
+            }
+            let data = {
+                userInfo,
+                flightSeat
+            }
 
-    let Res = {
-        OrderId:0,
-        payUrl:'',
-        cancelUrl:''
-    }
-    console.log('send:', data)
-    axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data)
-            .then(function (ret) {
-                console.log('ret:', ret.data)
-                Res.payUrl = ret.data.payUrl;
-                Res.cancelUrl = ret.data.cancelUrl;
-                Res.OrderId = ret.data.orderId;
-                // 如果成功
-                if(ret.data.responeInfo.code == 0){
-                    router.push({
-                        path: '/PaymentPage',
-                        query: {
-                            id : Res.OrderId,
-                            pay : Res.payUrl,
-                            cancel : Res.cancelUrl
+            let Res = {
+                OrderId:0,
+                payUrl:'',
+                cancelUrl:''
+            }
+            console.log('send:', data)
+            axios.post(proxy.$url+proxy.$BackendPort+'/reserve',data)
+                    .then(function (ret) {
+                        console.log('ret:', ret.data)
+                        Res.payUrl = ret.data.payUrl;
+                        Res.cancelUrl = ret.data.cancelUrl;
+                        Res.OrderId = ret.data.orderId;
+                        // 如果成功
+                        if(ret.data.responeInfo.code == 0){
+                            router.push({
+                                path: '/PaymentPage',
+                                query: {
+                                    id : Res.OrderId,
+                                    pay : Res.payUrl,
+                                    cancel : Res.cancelUrl
+                                }
+                            })
+                            dialogVisible.value = false;
+                        }
+                        else{
+                            console.log('这个座位已被预定')
+                            ElMessageBox.alert('这个座位已被预定', '提示', {
+                                confirmButtonText: '确定',
+                            })
                         }
                     })
-                    dialogVisible.value = false;
-                }
-                else{
-                    console.log('这个座位已被预定')
-                    ElMessageBox.alert('这个座位已被预定', '提示', {
-                        confirmButtonText: '确定',
-                    })
-                }
-            })
-
+        } else {
+            console.log('提交失败!', fields)
+        }
+    })
 
 }
 
@@ -786,7 +888,7 @@ const SchheduleButton = () =>{
 
 #destination {
     display: flex;
-    flex-flow: column;
+    flex-flow: row;
     margin-top: 6px;
 }
 
