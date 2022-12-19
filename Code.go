@@ -168,6 +168,9 @@ func Md5(str string) string {
 	bytes := c.Sum(nil)
 	return hex.EncodeToString(bytes)
 }
+func Notice() {
+
+}
 
 func main() {
 	db := InitDB()
@@ -188,7 +191,7 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(60 * time.Minute)
 	flightList := [10]FlightInfo{}
 	orderList := [100]OrderInfo{}
 	message := `
@@ -210,26 +213,29 @@ func main() {
 	)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
+	Notice := func() {
+		startTime := time.Now().Format("2006-01-02 15:04:05")
+		endTime := time.Now().AddDate(0, 0, 1).Format("2006-01-02 15:04:05")
+		result := db.Table("flight").Where("depTime > ? AND depTime < ?", startTime, endTime).Find(&flightList)
+		n := result.RowsAffected
+		for i := 0; i < (int)(n); i++ {
+			result = db.Table("order").Where("orderstatus = ? AND flight = ?", "已付款", flightList[i].Flight).Find(&orderList)
+			n1 := result.RowsAffected
+			for j := 0; j < (int)(n1); j++ {
+				fmt.Println(orderList[j])
+				mail.SetHeader("To", orderList[j].UserInfo.Mail)
+				mail.SetBody("text/html", fmt.Sprintf(message, orderList[j].UserInfo.Name, flightList[i].DepPlace, flightList[i].ArrPlace, flightList[i].Flight))
+				if err := d.DialAndSend(mail); err != nil {
+					fmt.Println(err.Error())
+				}
+				db.Table("order").Where("orderId = ?", orderList[j].OrderId).Update("orderStatus", "已通知")
+			}
+
+		}
+	}
 	go func() {
 		for range ticker.C {
-			startTime := time.Now().Format("2006-01-02 15:04:05")
-			endTime := time.Now().AddDate(0, 0, 1).Format("2006-01-02 15:04:05")
-			result := db.Table("flight").Where("depTime > ? AND depTime < ?", startTime, endTime).Find(&flightList)
-			n := result.RowsAffected
-			for i := 0; i < (int)(n); i++ {
-				result = db.Table("order").Where("orderstatus = ? AND flight = ?", "已付款", flightList[i].Flight).Find(&orderList)
-				n1 := result.RowsAffected
-				for j := 0; j < (int)(n1); j++ {
-					fmt.Println(orderList[j])
-					mail.SetHeader("To", orderList[j].UserInfo.Mail)
-					mail.SetBody("text/html", fmt.Sprintf(message, orderList[j].UserInfo.Name, flightList[i].DepPlace, flightList[i].ArrPlace, flightList[i].Flight))
-					if err := d.DialAndSend(mail); err != nil {
-						fmt.Println(err.Error())
-					}
-					db.Table("order").Where("orderId = ?", orderList[j].OrderId).Update("orderStatus", "已通知")
-				}
-
-			}
+			Notice()
 		}
 	}()
 
@@ -381,6 +387,7 @@ func main() {
 				if payStatus == 0 { //付款成功
 					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已付款")
 					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "已付款")
+					Notice()
 				} else { //取消订单
 					db.Table("order").Where("orderId = ?", id).Update("orderstatus", "已取消")
 					db.Table("seat").Where(SeatDetailInfo{Flight: flight, Seat: orderInfo.FlightSeat.Seat}).Update("status", "空")
