@@ -772,6 +772,12 @@ const SchheduleButton = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
     await formEl.validate((valid, fields) => {
         if (valid) {
+            if (selectedNames.value === '未选择') {
+                ElMessageBox.alert('请选择座位', '提示', {
+                    confirmButtonText: '确定',
+                });
+                return;
+            }
             console.log('提交成功!')
             // console.log(flightSelect.value)
             let userInfo = {

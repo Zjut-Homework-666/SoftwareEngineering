@@ -160,7 +160,7 @@ import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
 
 let count = ref('');  //倒计时
-let seconds= 900; // 15分钟的秒数
+let seconds= 60; // 1分钟的秒数
 
 const proxy = getCurrentInstance().appContext.config.globalProperties
 

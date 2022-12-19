@@ -4,6 +4,8 @@ module.exports = defineConfig({
 })
 module.exports = {
     publicPath: './',
+    outputDir: 'dist',
+    assetsDir: 'static',
     configureWebpack: {
           resolve: {
             extensions: [".ts", ".tsx", ".js", ".json"],
