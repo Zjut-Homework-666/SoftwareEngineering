@@ -239,7 +239,8 @@ const ReserveStatus = () =>{
             ElMessageBox.alert('支付超时，返回主界面', '提示', {
                 confirmButtonText: '确定',
             })
-            Return();
+            axios.get(cancel)
+            router.push('/')
         }
     })
 }
@@ -270,9 +271,5 @@ const Cancel = () => {// eslint-disable-line no-unused-vars
     axios.get(cancel)
     router.push('/')
     centerDialogVisible.value = false;
-}
-const Return = () => {
-    axios.get(cancel)
-    router.push('/')
 }
 </script>
