@@ -255,8 +255,6 @@ const Time = () => {
     setInterval(() => {
         seconds -= 1
         countDown()
-        if (seconds == 0)
-            Return()
     }, 1000)
 }
 
@@ -266,8 +264,6 @@ const countDown = () => {
     let s = seconds % 60;
     s = s < 10 ? "0" + s : s
     count.value = m.toString() + '分' + s.toString() + '秒'
-    // console.log(count.value)
-    // count = '14:59'
 }
 
 const Cancel = () => {// eslint-disable-line no-unused-vars
