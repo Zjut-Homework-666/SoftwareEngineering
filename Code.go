@@ -168,9 +168,6 @@ func Md5(str string) string {
 	bytes := c.Sum(nil)
 	return hex.EncodeToString(bytes)
 }
-func Notice() {
-
-}
 
 func main() {
 	db := InitDB()
