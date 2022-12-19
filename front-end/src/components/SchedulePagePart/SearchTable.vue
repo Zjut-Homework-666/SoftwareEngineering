@@ -717,9 +717,9 @@ const addFormRules = reactive<FormRules>({
             trigger: 'blur'
         },
         {
-            min: 19,
-            max: 19,
-            message: '请输入19位身份证号',
+            min: 18,
+            max: 18,
+            message: '请输入18位身份证号',
             trigger: 'blur'
         }
     ],
