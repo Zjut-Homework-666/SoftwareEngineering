@@ -18,8 +18,14 @@ import (
 )
 
 var ip = "121.5.157.39"
-var host = "127.0.0.1"
+var mysqlUsername = "Software"
+var mysqlPassword = "12345678"
+var mysqlPort = "3306"
+var mysqlName = "software"
+var host = ip
 var port = ":8089"
+var run = "10.0.4.11:8089"
+var cancelTime = 1
 
 type UserInfo struct {
 	Name  string `gorm:"column:name" json:"name"`
@@ -133,11 +139,11 @@ func CorsMiddleWare() gin.HandlerFunc {
 	}
 }
 func InitDB() *gorm.DB {
-	username := "root"
-	password := "12345678"
+	username := mysqlUsername
+	password := mysqlPassword
 	host := ip
-	port := "3306"
-	database := "AirTicket"
+	port := mysqlPort
+	database := mysqlName
 	charset := "utf8"
 	args := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=%s&parseTime=true",
 		username,
@@ -208,7 +214,7 @@ func main() {
 		for range ticker.C {
 			startTime := time.Now().Format("2006-01-02 15:04:05")
 			endTime := time.Now().AddDate(0, 0, 1).Format("2006-01-02 15:04:05")
-			result := db.Table("flight").Where("arrTime > ? AND arrTime < ?", startTime, endTime).Find(&flightList)
+			result := db.Table("flight").Where("depTime > ? AND depTime < ?", startTime, endTime).Find(&flightList)
 			n := result.RowsAffected
 			for i := 0; i < (int)(n); i++ {
 				result = db.Table("order").Where("orderstatus = ? AND flight = ?", "已付款", flightList[i].Flight).Find(&orderList)
@@ -216,7 +222,7 @@ func main() {
 				for j := 0; j < (int)(n1); j++ {
 					fmt.Println(orderList[j])
 					mail.SetHeader("To", orderList[j].UserInfo.Mail)
-					mail.SetBody("text/html", fmt.Sprintf(message, orderList[j].UserInfo.Name, flightList[i].ArrPlace, flightList[i].DepPlace, flightList[i].Flight))
+					mail.SetBody("text/html", fmt.Sprintf(message, orderList[j].UserInfo.Name, flightList[i].DepPlace, flightList[i].ArrPlace, flightList[i].Flight))
 					if err := d.DialAndSend(mail); err != nil {
 						fmt.Println(err.Error())
 					}
@@ -291,7 +297,7 @@ func main() {
 			str2 := "&checkCode=" + checkCode + "&payStatus="
 
 			//生成一个十五分钟后自动取消的协程，并将其取消函数绑定至Map
-			d := time.Now().Add(time.Minute * 1)
+			d := time.Now().Add(time.Minute * time.Duration(cancelTime))
 			ctx, cancel := context.WithDeadline(context.Background(), d)
 			orderCancelMap[orderId] = cancel
 			orderCtxMap[orderId] = ctx
@@ -362,6 +368,7 @@ func main() {
 		// TODO:王瑞沣,难度⭐⭐,更新机次座位数据库与订单数据库
 		orderInfo := OrderInfo{}
 		flightDetailInfo := FlightDetailInfo{}
+
 		orderId, _ := strconv.Atoi(c.Query("orderId"))
 		checkCode := c.Query("checkCode")
 		payStatus, _ := strconv.Atoi(c.Query("payStatus"))
@@ -418,7 +425,7 @@ func main() {
 		date := Fuzz(c.Query("date"))
 		minPrice, _ := strconv.Atoi(c.Query("minPrice"))
 		maxPrice, _ := strconv.Atoi(c.Query("maxPrice"))
-		str := "arrPlace LIKE ? AND depPlace LIKE ? AND arrTime LIKE ? AND lowestPrice > ? AND lowestPrice < ?"
+		str := "arrPlace LIKE ? AND depPlace LIKE ? AND depTime LIKE ? AND lowestPrice > ? AND lowestPrice < ?"
 		result := db.Table("flightinfo").Where(str, arrPlace, depPlace, date, minPrice, maxPrice).Find(&flightReturn.Flights)
 		if result.Error != nil {
 			flightReturn.ResponeInfo.Msg = result.Error.Error()
@@ -443,7 +450,7 @@ func main() {
 		for i, value := range orderList {
 			flightList[i] = value.FlightSeat.Flight
 		}
-		result := db.Table("flight").Where("flight IN (?)", flightList).Order("arrTime").Take(&flightInfo)
+		result := db.Table("flight").Where("flight IN (?)", flightList).Order("depTime").Take(&flightInfo)
 		if result.Error != nil {
 			checkReturn.ResponeInfo.Msg = result.Error.Error()
 			checkReturn.ResponeInfo.Code = 1
@@ -484,5 +491,5 @@ func main() {
 		c.JSON(http.StatusOK, seatReturn)
 	})
 
-	router.Run(port)
+	router.Run(run)
 }
