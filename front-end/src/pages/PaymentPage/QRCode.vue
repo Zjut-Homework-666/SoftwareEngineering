@@ -155,7 +155,7 @@ import router from '../../router/index.js'
 // import { useRoute } from "vue-router";
 import { ElMessageBox } from 'element-plus'
 
-import {getCurrentInstance, onMounted, ref} from "vue";
+import {getCurrentInstance, onMounted, ref,beforeDestroy} from "vue";
 import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
 
@@ -175,6 +175,11 @@ const centerDialogVisible = ref(false)
 onMounted(()=>{
     Time() //调用定时器
     ReserveStatus()
+})
+
+const flag = ref(false)
+beforeDestroy(()=>{
+    flag.value = true;
 })
 
 let flightInfo = ref({
@@ -252,6 +257,7 @@ const Time = () => {
             Return()
     }, 1000)
 }
+
 const countDown = () => {
     let m = parseInt((seconds/60%60).toString());
     m = m < 10 ? "0" + m : m
@@ -271,10 +277,12 @@ const Cancel = () => {// eslint-disable-line no-unused-vars
 
 
 const Return = () => {
-    axios.get(cancel)
-    ElMessageBox.alert('支付超时，返回主界面', '提示', {
-        confirmButtonText: '确定',
-    })
-    router.push('/')
+    if(flag.value==false){
+        axios.get(cancel)
+        ElMessageBox.alert('支付超时，返回主界面', '提示', {
+            confirmButtonText: '确定',
+        })
+        router.push('/')
+    }
 }
 </script>
