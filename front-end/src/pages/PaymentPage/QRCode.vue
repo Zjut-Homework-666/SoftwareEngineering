@@ -155,7 +155,7 @@ import router from '../../router/index.js'
 // import { useRoute } from "vue-router";
 import { ElMessageBox } from 'element-plus'
 
-import {getCurrentInstance, onMounted, ref, onBeforeUnmount} from "vue";
+import {getCurrentInstance, onMounted, ref} from "vue";
 import VueQr from 'vue-qr/src/packages/vue-qr.vue'
 
 
@@ -175,11 +175,6 @@ const centerDialogVisible = ref(false)
 onMounted(()=>{
     Time() //调用定时器
     ReserveStatus()
-})
-onBeforeUnmount(()=>{
-    if(Time) { //如果定时器还在运行 或者直接关闭，不用判断
-        clearInterval(Time); //关闭
-    }
 })
 // const flag = ref(false)
 // beforeDestroy(()=>{
@@ -239,6 +234,13 @@ const ReserveStatus = () =>{
             userInfo.value.mail = ret.data.orderInfo.userInfo.mail
             userInfo.value.id = ret.data.orderInfo.userInfo.id
         }
+        if(ret.data.responeInfo.code == 2){
+            // 付款超时
+            ElMessageBox.alert('支付超时，返回主界面', '提示', {
+                confirmButtonText: '确定',
+            })
+            Return();
+        }
     })
 }
 
@@ -275,9 +277,6 @@ const Cancel = () => {// eslint-disable-line no-unused-vars
 }
 const Return = () => {
     axios.get(cancel)
-    ElMessageBox.alert('支付超时，返回主界面', '提示', {
-        confirmButtonText: '确定',
-    })
     router.push('/')
 }
 </script>
