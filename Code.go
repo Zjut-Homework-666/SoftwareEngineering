@@ -258,9 +258,10 @@ func main() {
 		if result.Error != nil {
 			reserveReturn.ResponeInfo.Msg = result.Error.Error()
 			reserveReturn.ResponeInfo.Code = 1
-			return
-		}
-		if seatDetailInfo.Status == "空" { //座位状态为空则进行预定
+		} else if result.RowsAffected == 0 {
+			reserveReturn.ResponeInfo.Msg = "The seat does not exist"
+			reserveReturn.ResponeInfo.Code = 3
+		} else if seatDetailInfo.Status == "空" { //座位状态为空则进行预定
 
 			reserveReturn.ResponeInfo.Code = 0
 			reserveReturn.ResponeInfo.Msg = "success"
@@ -318,13 +319,11 @@ func main() {
 			reserveReturn.OrderId = orderId
 			reserveReturn.PayUrl = str1 + str2 + "0"
 			reserveReturn.CancelUrl = str1 + str2 + "1"
-			c.JSON(http.StatusOK, reserveReturn)
 		} else { //座位状态不为空则返回Code和Msg
 			reserveReturn.ResponeInfo.Code = 2
 			reserveReturn.ResponeInfo.Msg = "Failed. The seat has been reserved"
-			c.JSON(http.StatusOK, reserveReturn)
 		}
-
+		c.JSON(http.StatusOK, reserveReturn)
 	})
 
 	router.GET("/reserveStatus", func(c *gin.Context) {
@@ -448,7 +447,7 @@ func main() {
 		flightInfo := FlightInfo{}
 		checkReturn.ResponeInfo.Msg = "Success"
 		checkReturn.ResponeInfo.Code = 0
-		str := [2]string{"已通知", "已核验"}
+		str := [3]string{"已通知", "已核验", "已付款"}
 
 		db.Table("order").Where(OrderInfo{UserInfo: checkInfo.UserInfo}).Where("orderstatus IN (?)", str).Find(&orderList)
 		for i, value := range orderList {
@@ -468,6 +467,9 @@ func main() {
 				} else if value.OrderStatus == "已核验" {
 					checkReturn.ResponeInfo.Msg = "该订单已核验"
 					checkReturn.ResponeInfo.Code = 2
+				} else if value.OrderStatus == "已付款" {
+					checkReturn.ResponeInfo.Msg = "该订单还未通知"
+					checkReturn.ResponeInfo.Code = 3
 				}
 				break
 			}
