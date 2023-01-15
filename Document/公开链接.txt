@@ -1,0 +1,4 @@
+GitHub地址（已公开）：https://github.com/Zjut-Homework-666/SoftwareEngineering.git
+APIFox接口地址：https://www.apifox.cn/apidoc/shared-bcf80956-d454-4860-b9a7-f6332e50c2a0
+APIFox邀请链接（七天有效期）:https://www.apifox.cn/web/invite?token=LHStfe7ZaAOGn5gg24b8a
+机票预定系统（暂未失效）：http://121.5.157.39/#/
